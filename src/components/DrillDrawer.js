@@ -10,7 +10,7 @@ import BottomPanel from './BottomPanel';
 
 // Responsive constants
 const getResponsiveConstants = () => {
-  const isMobile = window.innerWidth <= 768;
+  const isMobile = isMobileDevice() || window.innerWidth <= 768;
   const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
   
   return {
@@ -19,6 +19,14 @@ const getResponsiveConstants = () => {
     isMobile,
     isTablet
   };
+};
+
+// Export ICON_SIZE for other components
+export const ICON_SIZE = 30;
+
+// Mobile detection utility
+const isMobileDevice = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
 };
 
 const DrillDrawer = () => {
@@ -52,6 +60,15 @@ const DrillDrawer = () => {
   }, [isMobile, showMobileSettings]);
 
   const { ICON_SIZE, SIDE_PANEL_WIDTH, isMobile, isTablet } = responsiveConstants;
+  
+  // Debug logging for mobile detection
+  console.log('Mobile Detection:', {
+    isMobile,
+    isTablet,
+    windowWidth: window.innerWidth,
+    userAgent: navigator.userAgent,
+    isMobileDevice: isMobileDevice()
+  });
 
   const [coneSize, setConeSize] = useState('medium');
   const [coneColor, setConeColor] = useState('orange');
@@ -1168,16 +1185,22 @@ const handleStageMouseUp = (e) => {
           onMouseDown={handleStageMouseDown}
           onTouchMove={e => {
             // Handle touch events for mobile
+            e.evt.preventDefault();
             if (draggingFromPanel) {
-              const touch = e.evt.touches[0];
               const stage = e.target.getStage();
               const point = stage.getPointerPosition();
               setDragPosition(point);
             }
             handleStageMouseMove(e);
           }}
-          onTouchEnd={handleStageMouseUp}
-          onTouchStart={handleStageMouseDown}
+          onTouchEnd={e => {
+            e.evt.preventDefault();
+            handleStageMouseUp(e);
+          }}
+          onTouchStart={e => {
+            e.evt.preventDefault();
+            handleStageMouseDown(e);
+          }}
           className={isDeleteMode ? 'scissors-cursor' : ''}
           style={{ 
             cursor: isDeleteMode ? 'crosshair' : (isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? 'crosshair' : 'default'),
