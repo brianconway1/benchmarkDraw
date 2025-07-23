@@ -8,13 +8,50 @@ import LeftPanel from './LeftPanel';
 import RightPanel from './RightPanel';
 import BottomPanel from './BottomPanel';
 
-
-
-export const ICON_SIZE = 30;
-const SIDE_PANEL_WIDTH = 150;
+// Responsive constants
+const getResponsiveConstants = () => {
+  const isMobile = window.innerWidth <= 768;
+  const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
+  
+  return {
+    ICON_SIZE: isMobile ? 25 : 30,
+    SIDE_PANEL_WIDTH: isMobile ? 80 : isTablet ? 120 : 150,
+    isMobile,
+    isTablet
+  };
+};
 
 const DrillDrawer = () => {
+  const [responsiveConstants, setResponsiveConstants] = useState(getResponsiveConstants());
   const stageRef = useRef();
+
+  // Update responsive constants on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setResponsiveConstants(getResponsiveConstants());
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Close mobile settings when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMobile && showMobileSettings && !event.target.closest('.mobile-settings-panel') && !event.target.closest('.mobile-toolbar')) {
+        setShowMobileSettings(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isMobile, showMobileSettings]);
+
+  const { ICON_SIZE, SIDE_PANEL_WIDTH, isMobile, isTablet } = responsiveConstants;
 
   const [coneSize, setConeSize] = useState('medium');
   const [coneColor, setConeColor] = useState('orange');
@@ -82,6 +119,7 @@ const DrillDrawer = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [isLineDrawingMode, setIsLineDrawingMode] = useState(false);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [showMobileSettings, setShowMobileSettings] = useState(false);
 
 
   // Helper for unique IDs
@@ -116,11 +154,11 @@ const DrillDrawer = () => {
   useEffect(() => {
     if (image) {
       setImageObj(image);
-      // Set max dimensions for the field to fit on a laptop screen
-      const MAX_WIDTH = 1100;
-      const MAX_HEIGHT = 700;
-      const screenWidth = Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2, MAX_WIDTH);
-      const screenHeight = Math.min(window.innerHeight, MAX_HEIGHT);
+      // Responsive dimensions based on screen size
+      const MAX_WIDTH = isMobile ? window.innerWidth - 20 : isTablet ? 800 : 1100;
+      const MAX_HEIGHT = isMobile ? window.innerHeight * 0.6 : isTablet ? 600 : 700;
+      const screenWidth = Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - (isMobile ? 10 : 20), MAX_WIDTH);
+      const screenHeight = Math.min(window.innerHeight - (isMobile ? 200 : 300), MAX_HEIGHT);
       const widthRatio = screenWidth / image.width;
       const heightRatio = screenHeight / image.height;
       const scaleFactor = Math.min(widthRatio, heightRatio, 1); // never upscale
@@ -129,7 +167,7 @@ const DrillDrawer = () => {
       const offsetY = (screenHeight - image.height * scaleFactor) / 2;
       setOffset({ x: offsetX, y: offsetY });
     }
-  }, [image]);
+  }, [image, SIDE_PANEL_WIDTH, isMobile, isTablet]);
 
   const pushHistory = () => {
     setHistory([...history, { cones, players, footballs, lines }]);
@@ -1087,7 +1125,13 @@ const handleStageMouseUp = (e) => {
   }, [draggingFromPanel]);
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', alignItems: 'stretch' }}>
+    <div style={{ 
+      display: 'flex', 
+      height: isMobile ? 'auto' : '100vh', 
+      overflow: 'hidden', 
+      alignItems: 'stretch',
+      flexDirection: isMobile ? 'column' : 'row'
+    }}>
       {/* Left Panel */}
       <LeftPanel
         SIDE_PANEL_WIDTH={SIDE_PANEL_WIDTH}
@@ -1095,12 +1139,22 @@ const handleStageMouseUp = (e) => {
         setBackground={setBackground}
         setIsLineDrawingMode={setIsLineDrawingMode}
         setLineBarConfig={setLineBarConfig}
+        isMobile={isMobile}
+        isTablet={isTablet}
       />
       {/* Field (Pitch) with equal horizontal spacing */}
-      <div style={{ flexGrow: 1, margin: '0 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', position: 'relative' }}>
+      <div style={{ 
+        flexGrow: 1, 
+        margin: isMobile ? '5px 0' : '0 4px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        flexDirection: 'column', 
+        position: 'relative' 
+      }}>
         <Stage
-          width={Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100)}
-          height={Math.min(window.innerHeight, 700)}
+          width={isMobile ? window.innerWidth - 20 : Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100)}
+          height={isMobile ? window.innerHeight * 0.6 : Math.min(window.innerHeight, 700)}
           onClick={handleStageClick}
           ref={stageRef}
           onMouseMove={e => {
@@ -1112,6 +1166,18 @@ const handleStageMouseUp = (e) => {
           }}
           onMouseUp={handleStageMouseUp}
           onMouseDown={handleStageMouseDown}
+          onTouchMove={e => {
+            // Handle touch events for mobile
+            if (draggingFromPanel) {
+              const touch = e.evt.touches[0];
+              const stage = e.target.getStage();
+              const point = stage.getPointerPosition();
+              setDragPosition(point);
+            }
+            handleStageMouseMove(e);
+          }}
+          onTouchEnd={handleStageMouseUp}
+          onTouchStart={handleStageMouseDown}
           className={isDeleteMode ? 'scissors-cursor' : ''}
           style={{ 
             cursor: isDeleteMode ? 'crosshair' : (isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? 'crosshair' : 'default'),
@@ -1564,10 +1630,13 @@ const handleStageMouseUp = (e) => {
           setIsLineDrawingMode={setIsLineDrawingMode}
           isDeleteMode={isDeleteMode}
           setIsDeleteMode={setIsDeleteMode}
+          isMobile={isMobile}
+          isTablet={isTablet}
         />
       </div>
       {/* Right Panel */}
-              <RightPanel
+      {!isMobile && (
+        <RightPanel
           SIDE_PANEL_WIDTH={SIDE_PANEL_WIDTH}
           coneColor={coneColor}
           setConeColor={setConeColor}
@@ -1615,7 +1684,10 @@ const handleStageMouseUp = (e) => {
           lineBarConfig={lineBarConfig}
           isDeleteMode={isDeleteMode}
           setIsDeleteMode={setIsDeleteMode}
+          isMobile={isMobile}
+          isTablet={isTablet}
         />
+      )}
       {/* Editing Overlays */}
       {(editingConeId !== null || editingFootballId !== null || editingLineId !== null) && (
         <div 
@@ -1810,6 +1882,319 @@ const handleStageMouseUp = (e) => {
               }}
             >
               Done
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Floating Toolbar */}
+      {isMobile && (
+        <div
+          className="mobile-toolbar"
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            backgroundColor: '#ffffff',
+            borderRadius: '50px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            border: '2px solid #000000',
+            padding: '10px',
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
+          }}
+        >
+          {/* Cone Tool */}
+          <div
+            style={{
+              width: '50px',
+              height: '50px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '50%',
+              border: '2px solid #000000'
+            }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              setDraggingFromPanel('cone');
+            }}
+          >
+            <svg width="30" height="30" viewBox="0 0 100 100">
+              <polygon points="50,10 90,90 10,90" fill={coneColor} stroke="black" strokeWidth="4" />
+            </svg>
+          </div>
+
+          {/* Team 1 Player */}
+          <div
+            style={{
+              width: '50px',
+              height: '50px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '50%',
+              border: '2px solid #000000'
+            }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              setDraggingFromPanel('team1');
+            }}
+          >
+            <svg width="30" height="30">
+              <circle cx="15" cy="15" r="14" fill={playerColorTeam1} stroke="black" strokeWidth="1" />
+              <text x="15" y="18" textAnchor="middle" fontSize="12" fill="black" fontWeight="bold">
+                {nextPlayerNumberTeam1}
+              </text>
+            </svg>
+          </div>
+
+          {/* Team 2 Player */}
+          <div
+            style={{
+              width: '50px',
+              height: '50px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '50%',
+              border: '2px solid #000000'
+            }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              setDraggingFromPanel('team2');
+            }}
+          >
+            <svg width="30" height="30">
+              <circle cx="15" cy="15" r="14" fill={playerColorTeam2} stroke="black" strokeWidth="1" />
+              <text x="15" y="18" textAnchor="middle" fontSize="12" fill="black" fontWeight="bold">
+                {nextPlayerNumberTeam2}
+              </text>
+            </svg>
+          </div>
+
+          {/* Football */}
+          <div
+            style={{
+              width: '50px',
+              height: '50px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '50%',
+              border: '2px solid #000000',
+              fontSize: '30px'
+            }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              setDraggingFromPanel('football');
+            }}
+          >
+            ⚽
+          </div>
+
+          {/* Undo Button */}
+          <div
+            style={{
+              width: '50px',
+              height: '50px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              backgroundColor: '#000000',
+              borderRadius: '50%',
+              border: '2px solid #000000',
+              color: '#ffffff'
+            }}
+            onClick={undoLast}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              undoLast();
+            }}
+          >
+            <FaUndo />
+          </div>
+
+          {/* Clear All Button */}
+          <div
+            style={{
+              width: '50px',
+              height: '50px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              backgroundColor: '#000000',
+              borderRadius: '50%',
+              border: '2px solid #000000',
+              color: '#ffffff',
+              fontSize: '12px',
+              textAlign: 'center',
+              padding: '5px'
+            }}
+            onClick={clearAllItems}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              clearAllItems();
+            }}
+          >
+            Clear
+          </div>
+
+          {/* Settings Button */}
+          <div
+            style={{
+              width: '50px',
+              height: '50px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              backgroundColor: showMobileSettings ? '#2563eb' : '#000000',
+              borderRadius: '50%',
+              border: '2px solid #000000',
+              color: '#ffffff',
+              fontSize: '20px'
+            }}
+            onClick={() => setShowMobileSettings(!showMobileSettings)}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              setShowMobileSettings(!showMobileSettings);
+            }}
+          >
+            ⚙️
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Settings Panel */}
+      {isMobile && showMobileSettings && (
+        <div
+          className="mobile-settings-panel"
+          style={{
+            position: 'fixed',
+            bottom: '100px',
+            right: '20px',
+            backgroundColor: '#ffffff',
+            borderRadius: '12px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            border: '2px solid #000000',
+            padding: '15px',
+            zIndex: 999,
+            minWidth: '200px',
+            maxWidth: '250px'
+          }}
+        >
+          <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 'bold' }}>Settings</h4>
+          
+          {/* Cone Color */}
+          <div style={{ marginBottom: '10px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Cone Color:
+            </label>
+            <select
+              value={coneColor}
+              onChange={(e) => setConeColor(e.target.value)}
+              style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #ccc' }}
+            >
+              <option value="white">White</option>
+              <option value="black">Black</option>
+              <option value="orange">Orange</option>
+              <option value="red">Red</option>
+              <option value="yellow">Yellow</option>
+              <option value="green">Green</option>
+              <option value="blue">Blue</option>
+            </select>
+          </div>
+
+          {/* Cone Size */}
+          <div style={{ marginBottom: '10px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Cone Size:
+            </label>
+            <select
+              value={coneSize}
+              onChange={(e) => setConeSize(e.target.value)}
+              style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #ccc' }}
+            >
+              <option value="small">Small</option>
+              <option value="medium">Medium</option>
+              <option value="large">Large</option>
+            </select>
+          </div>
+
+          {/* Team 1 Color */}
+          <div style={{ marginBottom: '10px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Team 1 Color:
+            </label>
+            <select
+              value={playerColorTeam1}
+              onChange={(e) => setPlayerColorTeam1(e.target.value)}
+              style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #ccc' }}
+            >
+              <option value="#2563eb">Blue</option>
+              <option value="#dc2626">Red</option>
+              <option value="#16a34a">Green</option>
+              <option value="#ca8a04">Yellow</option>
+              <option value="#9333ea">Purple</option>
+              <option value="#ea580c">Orange</option>
+              <option value="#db2777">Pink</option>
+              <option value="#6b7280">Gray</option>
+            </select>
+          </div>
+
+          {/* Team 2 Color */}
+          <div style={{ marginBottom: '10px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Team 2 Color:
+            </label>
+            <select
+              value={playerColorTeam2}
+              onChange={(e) => setPlayerColorTeam2(e.target.value)}
+              style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #ccc' }}
+            >
+              <option value="#2563eb">Blue</option>
+              <option value="#dc2626">Red</option>
+              <option value="#16a34a">Green</option>
+              <option value="#ca8a04">Yellow</option>
+              <option value="#9333ea">Purple</option>
+              <option value="#ea580c">Orange</option>
+              <option value="#db2777">Pink</option>
+              <option value="#6b7280">Gray</option>
+            </select>
+          </div>
+
+          {/* Delete Mode Toggle */}
+          <div style={{ marginBottom: '10px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+              Delete Mode:
+            </label>
+            <button
+              onClick={() => setIsDeleteMode(!isDeleteMode)}
+              style={{
+                width: '100%',
+                padding: '8px',
+                fontSize: '12px',
+                borderRadius: '4px',
+                border: '2px solid #000000',
+                backgroundColor: isDeleteMode ? '#ff4444' : '#ffffff',
+                color: isDeleteMode ? '#ffffff' : '#000000',
+                cursor: 'pointer'
+              }}
+            >
+              {isDeleteMode ? 'Active' : 'Inactive'}
             </button>
           </div>
         </div>

@@ -50,6 +50,8 @@ const RightPanel = ({
   lineBarConfig,
   isDeleteMode,
   setIsDeleteMode,
+  isMobile,
+  isTablet,
 }) => {
   console.log('=== RIGHTPANEL DEBUG ===');
   console.log('isDeleteMode received:', isDeleteMode);

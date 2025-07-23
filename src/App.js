@@ -16,6 +16,15 @@ const theme = createTheme({
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
   },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 960,
+      lg: 1280,
+      xl: 1920,
+    },
+  },
 });
 
 function App() {
@@ -25,23 +34,33 @@ function App() {
       <div style={{ 
         backgroundColor: '#000000', 
         minHeight: '100vh',
-        padding: '20px'
+        padding: '10px',
+        '@media (max-width: 768px)': {
+          padding: '5px',
+        }
       }}>
         {/* BENCH MARK SPORTS Logo Header */}
         <div style={{ 
           textAlign: 'center', 
-          marginBottom: '20px',
-          padding: '20px',
-          borderBottom: '2px solid #ffffff'
+          marginBottom: '10px',
+          padding: '10px',
+          borderBottom: '2px solid #ffffff',
+          '@media (max-width: 768px)': {
+            marginBottom: '5px',
+            padding: '5px',
+          }
         }}>
           <img 
             src="/BENCH MARK BRAND WHT.png" 
             alt="BENCH MARK SPORTS" 
             style={{
-              maxWidth: '400px',
+              maxWidth: '100%',
               height: 'auto',
               display: 'block',
-              margin: '0 auto'
+              margin: '0 auto',
+              '@media (max-width: 768px)': {
+                maxWidth: '200px',
+              }
             }}
           />
         </div>

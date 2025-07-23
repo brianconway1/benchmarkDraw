@@ -43,6 +43,8 @@ const BottomPanel = ({
   setIsLineDrawingMode,
   isDeleteMode,
   setIsDeleteMode,
+  isMobile,
+  isTablet,
 }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [activeTab, setActiveTab] = useState('line');
@@ -112,30 +114,31 @@ const BottomPanel = ({
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        margin: '24px 0',
-        padding: '0 16px',
+        margin: isMobile ? '10px 0' : '24px 0',
+        padding: isMobile ? '0 8px' : '0 16px',
         position: 'relative'
       }}
     >
       <Card sx={{ 
-        minWidth: 1200, 
-        maxWidth: 1600,
+        minWidth: isMobile ? '100%' : 1200, 
+        maxWidth: isMobile ? '100%' : 1600,
         backgroundColor: '#ffffff',
         borderRadius: '8px',
         boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
         border: '2px solid #000000'
       }}>
-        <CardContent sx={{ padding: '16px !important' }}>
+        <CardContent sx={{ padding: isMobile ? '8px !important' : '16px !important' }}>
           <Box
             sx={{
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: 4,
-        flexWrap: 'wrap',
-              minHeight: '60px'
-      }}
-    >
+              gap: isMobile ? 1 : 4,
+              flexWrap: 'wrap',
+              minHeight: isMobile ? '40px' : '60px',
+              flexDirection: isMobile ? 'column' : 'row'
+            }}
+          >
       {/* Screenshot Button */}
       <Button
         variant="contained"
@@ -166,15 +169,29 @@ const BottomPanel = ({
 
 
       {/* Line Tools Panel */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'nowrap', minWidth: 800 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: isMobile ? 0.5 : 1.5, 
+        flexWrap: isMobile ? 'wrap' : 'nowrap', 
+        minWidth: isMobile ? '100%' : 800,
+        flexDirection: isMobile ? 'column' : 'row'
+      }}>
             {/* Header */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 100, justifyContent: 'center' }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1, 
+              minWidth: isMobile ? '100%' : 100, 
+              justifyContent: 'center',
+              marginBottom: isMobile ? 1 : 0
+            }}>
               <Typography variant="body2" sx={{ 
                 fontWeight: 700, 
                 color: '#000000', 
                 textTransform: 'uppercase', 
                 letterSpacing: '0.5px',
-                fontSize: '0.875rem',
+                fontSize: isMobile ? '0.75rem' : '0.875rem',
                 textAlign: 'center'
               }}>
                 Line Drawer
