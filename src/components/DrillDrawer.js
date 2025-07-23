@@ -1144,10 +1144,11 @@ const handleStageMouseUp = (e) => {
   return (
     <div style={{ 
       display: 'flex', 
-      height: isMobile ? 'auto' : '100vh', 
+      height: isMobile ? 'calc(100vh - 60px)' : '100vh', 
       overflow: 'hidden', 
       alignItems: 'stretch',
-      flexDirection: isMobile ? 'column' : 'row'
+      flexDirection: isMobile ? 'column' : 'row',
+      position: 'relative'
     }}>
       {/* Left Panel */}
       <LeftPanel
@@ -1167,11 +1168,12 @@ const handleStageMouseUp = (e) => {
         alignItems: 'center', 
         justifyContent: 'center', 
         flexDirection: 'column', 
-        position: 'relative' 
+        position: 'relative',
+        minHeight: isMobile ? '300px' : 'auto'
       }}>
         <Stage
-          width={isMobile ? window.innerWidth - 20 : Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100)}
-          height={isMobile ? window.innerHeight * 0.6 : Math.min(window.innerHeight, 700)}
+          width={isMobile ? Math.min(window.innerWidth - 20, 600) : Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100)}
+          height={isMobile ? Math.min(window.innerHeight * 0.5, 400) : Math.min(window.innerHeight, 700)}
           onClick={handleStageClick}
           ref={stageRef}
           onMouseMove={e => {
@@ -1205,7 +1207,10 @@ const handleStageMouseUp = (e) => {
           style={{ 
             cursor: isDeleteMode ? 'crosshair' : (isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? 'crosshair' : 'default'),
             border: isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? '2px solid #2196F3' : 'none',
-            borderRadius: isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? '4px' : '0'
+            borderRadius: isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? '4px' : '0',
+            touchAction: 'none',
+            WebkitUserSelect: 'none',
+            userSelect: 'none'
           }}
         >
           <Layer scale={{ x: scale, y: scale }} x={offset.x} y={offset.y}>
@@ -1922,29 +1927,40 @@ const handleStageMouseUp = (e) => {
             borderRadius: '50px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
             border: '2px solid #000000',
-            padding: '10px',
+            padding: '12px',
             zIndex: 1000,
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px'
+            gap: '10px',
+            touchAction: 'manipulation',
+            WebkitUserSelect: 'none',
+            userSelect: 'none'
           }}
         >
           {/* Cone Tool */}
           <div
             style={{
-              width: '50px',
-              height: '50px',
+              width: '56px',
+              height: '56px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
               backgroundColor: '#f8f9fa',
               borderRadius: '50%',
-              border: '2px solid #000000'
+              border: '2px solid #000000',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'rgba(0,0,0,0.1)',
+              transition: 'transform 0.1s ease'
             }}
             onTouchStart={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               setDraggingFromPanel('cone');
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
             }}
           >
             <svg width="30" height="30" viewBox="0 0 100 100">
@@ -1955,19 +1971,27 @@ const handleStageMouseUp = (e) => {
           {/* Team 1 Player */}
           <div
             style={{
-              width: '50px',
-              height: '50px',
+              width: '56px',
+              height: '56px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
               backgroundColor: '#f8f9fa',
               borderRadius: '50%',
-              border: '2px solid #000000'
+              border: '2px solid #000000',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'rgba(0,0,0,0.1)',
+              transition: 'transform 0.1s ease'
             }}
             onTouchStart={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               setDraggingFromPanel('team1');
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
             }}
           >
             <svg width="30" height="30">
@@ -1981,19 +2005,27 @@ const handleStageMouseUp = (e) => {
           {/* Team 2 Player */}
           <div
             style={{
-              width: '50px',
-              height: '50px',
+              width: '56px',
+              height: '56px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
               backgroundColor: '#f8f9fa',
               borderRadius: '50%',
-              border: '2px solid #000000'
+              border: '2px solid #000000',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'rgba(0,0,0,0.1)',
+              transition: 'transform 0.1s ease'
             }}
             onTouchStart={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               setDraggingFromPanel('team2');
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
             }}
           >
             <svg width="30" height="30">
@@ -2007,8 +2039,8 @@ const handleStageMouseUp = (e) => {
           {/* Football */}
           <div
             style={{
-              width: '50px',
-              height: '50px',
+              width: '56px',
+              height: '56px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2016,11 +2048,19 @@ const handleStageMouseUp = (e) => {
               backgroundColor: '#f8f9fa',
               borderRadius: '50%',
               border: '2px solid #000000',
-              fontSize: '30px'
+              fontSize: '30px',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'rgba(0,0,0,0.1)',
+              transition: 'transform 0.1s ease'
             }}
             onTouchStart={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               setDraggingFromPanel('football');
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
             }}
           >
             ⚽
@@ -2029,8 +2069,8 @@ const handleStageMouseUp = (e) => {
           {/* Undo Button */}
           <div
             style={{
-              width: '50px',
-              height: '50px',
+              width: '56px',
+              height: '56px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2038,12 +2078,20 @@ const handleStageMouseUp = (e) => {
               backgroundColor: '#000000',
               borderRadius: '50%',
               border: '2px solid #000000',
-              color: '#ffffff'
+              color: '#ffffff',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'rgba(255,255,255,0.1)',
+              transition: 'transform 0.1s ease'
             }}
             onClick={undoLast}
             onTouchStart={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               undoLast();
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
             }}
           >
             <FaUndo />
@@ -2052,8 +2100,8 @@ const handleStageMouseUp = (e) => {
           {/* Clear All Button */}
           <div
             style={{
-              width: '50px',
-              height: '50px',
+              width: '56px',
+              height: '56px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2064,12 +2112,20 @@ const handleStageMouseUp = (e) => {
               color: '#ffffff',
               fontSize: '12px',
               textAlign: 'center',
-              padding: '5px'
+              padding: '5px',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'rgba(255,255,255,0.1)',
+              transition: 'transform 0.1s ease'
             }}
             onClick={clearAllItems}
             onTouchStart={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               clearAllItems();
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
             }}
           >
             Clear
@@ -2078,8 +2134,8 @@ const handleStageMouseUp = (e) => {
           {/* Settings Button */}
           <div
             style={{
-              width: '50px',
-              height: '50px',
+              width: '56px',
+              height: '56px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2088,12 +2144,20 @@ const handleStageMouseUp = (e) => {
               borderRadius: '50%',
               border: '2px solid #000000',
               color: '#ffffff',
-              fontSize: '20px'
+              fontSize: '20px',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'rgba(255,255,255,0.1)',
+              transition: 'transform 0.1s ease'
             }}
             onClick={() => setShowMobileSettings(!showMobileSettings)}
             onTouchStart={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               setShowMobileSettings(!showMobileSettings);
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
             }}
           >
             ⚙️
@@ -2116,7 +2180,10 @@ const handleStageMouseUp = (e) => {
             padding: '15px',
             zIndex: 999,
             minWidth: '200px',
-            maxWidth: '250px'
+            maxWidth: '250px',
+            touchAction: 'manipulation',
+            WebkitUserSelect: 'none',
+            userSelect: 'none'
           }}
         >
           <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 'bold' }}>Settings</h4>
@@ -2129,7 +2196,22 @@ const handleStageMouseUp = (e) => {
             <select
               value={coneColor}
               onChange={(e) => setConeColor(e.target.value)}
-              style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #ccc' }}
+              style={{ 
+                width: '100%', 
+                padding: '12px', 
+                fontSize: '14px', 
+                borderRadius: '8px', 
+                border: '2px solid #000000',
+                backgroundColor: '#ffffff',
+                touchAction: 'manipulation',
+                WebkitAppearance: 'none',
+                appearance: 'none',
+                backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%204.9A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E")',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 8px center',
+                backgroundSize: '12px auto',
+                paddingRight: '30px'
+              }}
             >
               <option value="white">White</option>
               <option value="black">Black</option>
@@ -2149,7 +2231,22 @@ const handleStageMouseUp = (e) => {
             <select
               value={coneSize}
               onChange={(e) => setConeSize(e.target.value)}
-              style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #ccc' }}
+              style={{ 
+                width: '100%', 
+                padding: '12px', 
+                fontSize: '14px', 
+                borderRadius: '8px', 
+                border: '2px solid #000000',
+                backgroundColor: '#ffffff',
+                touchAction: 'manipulation',
+                WebkitAppearance: 'none',
+                appearance: 'none',
+                backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%204.9A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E")',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 8px center',
+                backgroundSize: '12px auto',
+                paddingRight: '30px'
+              }}
             >
               <option value="small">Small</option>
               <option value="medium">Medium</option>
@@ -2165,7 +2262,22 @@ const handleStageMouseUp = (e) => {
             <select
               value={playerColorTeam1}
               onChange={(e) => setPlayerColorTeam1(e.target.value)}
-              style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #ccc' }}
+              style={{ 
+                width: '100%', 
+                padding: '12px', 
+                fontSize: '14px', 
+                borderRadius: '8px', 
+                border: '2px solid #000000',
+                backgroundColor: '#ffffff',
+                touchAction: 'manipulation',
+                WebkitAppearance: 'none',
+                appearance: 'none',
+                backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%204.9A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E")',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 8px center',
+                backgroundSize: '12px auto',
+                paddingRight: '30px'
+              }}
             >
               <option value="#2563eb">Blue</option>
               <option value="#dc2626">Red</option>
@@ -2186,7 +2298,22 @@ const handleStageMouseUp = (e) => {
             <select
               value={playerColorTeam2}
               onChange={(e) => setPlayerColorTeam2(e.target.value)}
-              style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #ccc' }}
+              style={{ 
+                width: '100%', 
+                padding: '12px', 
+                fontSize: '14px', 
+                borderRadius: '8px', 
+                border: '2px solid #000000',
+                backgroundColor: '#ffffff',
+                touchAction: 'manipulation',
+                WebkitAppearance: 'none',
+                appearance: 'none',
+                backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%204.9A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E")',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 8px center',
+                backgroundSize: '12px auto',
+                paddingRight: '30px'
+              }}
             >
               <option value="#2563eb">Blue</option>
               <option value="#dc2626">Red</option>
@@ -2208,13 +2335,17 @@ const handleStageMouseUp = (e) => {
               onClick={() => setIsDeleteMode(!isDeleteMode)}
               style={{
                 width: '100%',
-                padding: '8px',
-                fontSize: '12px',
-                borderRadius: '4px',
+                padding: '12px',
+                fontSize: '14px',
+                borderRadius: '8px',
                 border: '2px solid #000000',
                 backgroundColor: isDeleteMode ? '#ff4444' : '#ffffff',
                 color: isDeleteMode ? '#ffffff' : '#000000',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'rgba(0,0,0,0.1)',
+                transition: 'all 0.2s ease',
+                fontWeight: 'bold'
               }}
             >
               {isDeleteMode ? 'Active' : 'Inactive'}

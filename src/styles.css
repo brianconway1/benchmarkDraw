@@ -7,28 +7,94 @@ body {
   -ms-user-select: none;
   user-select: none;
   overflow-x: hidden;
+  /* Prevent bounce scrolling on iOS */
+  overscroll-behavior: none;
+  /* Prevent pull-to-refresh */
+  overscroll-behavior-y: contain;
 }
 
 /* Mobile-specific styles */
 @media (max-width: 768px) {
   body {
     font-size: 14px;
+    /* Prevent zoom on input focus */
+    touch-action: manipulation;
   }
   
   /* Prevent zoom on input focus */
   input, select, textarea {
     font-size: 16px !important;
+    /* Prevent zoom on iOS */
+    transform: scale(1);
   }
   
   /* Touch-friendly button sizes */
   button {
     min-height: 44px;
     min-width: 44px;
+    /* Improve touch feedback */
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
   }
   
   /* Prevent horizontal scrolling */
   * {
     max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Improve scrolling performance */
+  html {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Better touch targets */
+  [role="button"], 
+  button, 
+  input[type="button"], 
+  input[type="submit"], 
+  input[type="reset"] {
+    min-height: 44px;
+    min-width: 44px;
+    /* Remove default touch styling */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+  
+  /* Prevent double-tap zoom */
+  * {
+    touch-action: manipulation;
+  }
+  
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Better mobile canvas handling */
+  .konvajs-content {
+    touch-action: none;
+    /* Prevent text selection on canvas */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Mobile floating toolbar improvements */
+  .mobile-toolbar {
+    /* Ensure it stays above other content */
+    z-index: 1000;
+    /* Better touch targets */
+    touch-action: manipulation;
+  }
+  
+  /* Mobile settings panel improvements */
+  .mobile-settings-panel {
+    /* Ensure it stays above other content */
+    z-index: 999;
+    /* Better touch targets */
+    touch-action: manipulation;
   }
 }
 
@@ -36,6 +102,23 @@ body {
 @media (min-width: 769px) and (max-width: 1024px) {
   body {
     font-size: 15px;
+  }
+  
+  /* Better touch handling for tablets */
+  .konvajs-content {
+    touch-action: none;
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1025px) {
+  /* Desktop-specific optimizations */
+  .konvajs-content {
+    /* Allow text selection on desktop if needed */
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
   }
 }
 
@@ -59,32 +142,16 @@ input, textarea {
   user-select: text;
 }
 
-/* Mobile touch improvements */
-@media (max-width: 768px) {
-  /* Improve touch targets */
-  [role="button"], 
-  button, 
-  input[type="button"], 
-  input[type="submit"], 
-  input[type="reset"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-  
-  /* Prevent double-tap zoom */
-  * {
-    touch-action: manipulation;
-  }
-  
-  /* Smooth scrolling */
-  html {
-    scroll-behavior: smooth;
-  }
-}
-
 /* Konva stage mobile optimizations */
 .konvajs-content {
   touch-action: none;
+  /* Prevent context menu on long press */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 /* Mobile floating toolbar animations */
@@ -95,4 +162,70 @@ input, textarea {
 
 .mobile-toolbar {
   animation: fadeIn 0.3s ease-out;
+}
+
+/* Mobile-specific improvements for better performance */
+@media (max-width: 768px) {
+  /* Reduce animations on mobile for better performance */
+  * {
+    animation-duration: 0.2s !important;
+    transition-duration: 0.2s !important;
+  }
+  
+  /* Better mobile canvas performance */
+  canvas {
+    /* Optimize for mobile rendering */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  
+  /* Improve mobile button feedback */
+  button:active {
+    transform: scale(0.95);
+  }
+  
+  /* Better mobile form elements */
+  select, input {
+    /* Remove default mobile styling */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* Better mobile input handling */
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+  }
+  
+  /* Mobile-specific scrollbar hiding */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Better mobile focus states */
+  button:focus, input:focus, select:focus {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+  }
+}
+
+/* High DPI display optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  canvas {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Landscape mobile optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+  /* Adjust layout for landscape mode */
+  body {
+    font-size: 12px;
+  }
+  
+  /* Smaller touch targets in landscape */
+  button {
+    min-height: 36px;
+    min-width: 36px;
+  }
 }

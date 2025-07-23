@@ -114,9 +114,10 @@ const BottomPanel = ({
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        margin: isMobile ? '10px 0' : '24px 0',
-        padding: isMobile ? '0 8px' : '0 16px',
-        position: 'relative'
+        margin: isMobile ? '5px 0' : '24px 0',
+        padding: isMobile ? '0 4px' : '0 16px',
+        position: 'relative',
+        touchAction: 'manipulation'
       }}
     >
       <Card sx={{ 
@@ -125,7 +126,8 @@ const BottomPanel = ({
         backgroundColor: '#ffffff',
         borderRadius: '8px',
         boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-        border: '2px solid #000000'
+        border: '2px solid #000000',
+        touchAction: 'manipulation'
       }}>
         <CardContent sx={{ padding: isMobile ? '8px !important' : '16px !important' }}>
           <Box

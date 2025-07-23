@@ -23,13 +23,14 @@ const LeftPanel = ({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '10px',
+    padding: '8px',
     backgroundColor: '#ffffff',
     borderRadius: '8px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-    margin: '5px',
+    margin: '3px',
     border: '2px solid #000000',
-    gap: '10px'
+    gap: '8px',
+    touchAction: 'manipulation'
   } : {
     position: 'absolute',
     top: '50%',
@@ -48,9 +49,9 @@ const LeftPanel = ({
   };
 
   const buttonStyle = isMobile ? {
-    width: '80px',
-    padding: '12px 0',
-    fontSize: '0.9rem',
+    width: '70px',
+    padding: '10px 0',
+    fontSize: '0.8rem',
     borderRadius: '8px',
     border: 'none',
     background: '#ffffff',
@@ -62,6 +63,8 @@ const LeftPanel = ({
     border: '2px solid #000000',
     marginBottom: 0,
     minHeight: '44px', // Touch-friendly minimum height
+    touchAction: 'manipulation',
+    WebkitTapHighlightColor: 'rgba(0,0,0,0.1)'
   } : {
     width: '110px',
     padding: '16px 0',

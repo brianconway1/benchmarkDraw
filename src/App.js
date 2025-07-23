@@ -28,45 +28,44 @@ const theme = createTheme({
 });
 
 function App() {
+  // Detect mobile device
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+  const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <div style={{ 
         backgroundColor: '#000000', 
         minHeight: '100vh',
-        padding: '10px',
-        '@media (max-width: 768px)': {
-          padding: '5px',
-        }
+        padding: isMobile ? '5px' : '10px',
+        overflow: 'hidden',
+        position: 'relative'
       }}>
         {/* BENCH MARK SPORTS Logo Header */}
         <div style={{ 
           textAlign: 'center', 
-          marginBottom: '10px',
-          padding: '10px',
+          marginBottom: isMobile ? '5px' : '10px',
+          padding: isMobile ? '5px' : '10px',
           borderBottom: '2px solid #ffffff',
-          '@media (max-width: 768px)': {
-            marginBottom: '5px',
-            padding: '5px',
-          }
+          position: 'relative',
+          zIndex: 10
         }}>
           <img 
             src="/BENCH MARK BRAND WHT.png" 
             alt="BENCH MARK SPORTS" 
             style={{
-              maxWidth: '100%',
+              maxWidth: isMobile ? '180px' : '100%',
               height: 'auto',
               display: 'block',
               margin: '0 auto',
-              '@media (max-width: 768px)': {
-                maxWidth: '200px',
-              }
+              maxHeight: isMobile ? '40px' : '60px'
             }}
           />
         </div>
         
-      <DrillDrawer />
-    </div>
+        <DrillDrawer />
+      </div>
     </ThemeProvider>
   );
 }
