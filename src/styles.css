@@ -1,0 +1,29 @@
+body { 
+  margin: 0; 
+  font-family: sans-serif; 
+  background: #f2f2f2; 
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.scissors-cursor {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%23ff4444'><path d='M6 2l2.5 2.5L6 7 4.5 5.5 6 4z'/><path d='M18 2l-2.5 2.5L18 7l1.5-1.5L18 4z'/><path d='M12 8l-6 6 6 6 6-6z'/></svg>") 12 12, crosshair !important;
+}
+
+/* Prevent text selection on draggable elements */
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection only in specific areas if needed */
+input, textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}

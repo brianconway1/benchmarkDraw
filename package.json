@@ -1,0 +1,38 @@
+{
+  "name": "drill-drawer-web",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.2.0",
+    "@mui/material": "^7.2.0",
+    "konva": "^9.3.0",
+    "lucide-react": "^0.525.0",
+    "react": "^18.2.0",
+    "react-colorful": "^5.6.1",
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0",
+    "react-konva": "^18.0.2",
+    "react-scripts": "^5.0.1",
+    "react-select": "^5.10.2",
+    "react-text": "^3.2.5",
+    "use-image": "^1.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
