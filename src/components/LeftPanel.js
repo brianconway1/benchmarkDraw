@@ -7,12 +7,13 @@ const LeftPanel = ({
   setIsLineDrawingMode,
   setLineBarConfig,
   isMobile,
-  isTablet
+  isTablet,
+  isSmallMobile
 }) => {
   const panelStyle = isMobile ? {
     width: '100%',
     position: 'relative',
-    marginBottom: '10px'
+    marginBottom: isSmallMobile ? '8px' : '10px'
   } : {
     width: SIDE_PANEL_WIDTH,
     position: 'relative'
@@ -23,13 +24,13 @@ const LeftPanel = ({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '8px',
+    padding: isSmallMobile ? '6px' : '8px',
     backgroundColor: '#ffffff',
     borderRadius: '8px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-    margin: '3px',
+    margin: isSmallMobile ? '2px' : '3px',
     border: '2px solid #000000',
-    gap: '8px',
+    gap: isSmallMobile ? '6px' : '8px',
     touchAction: 'manipulation'
   } : {
     position: 'absolute',
@@ -49,9 +50,9 @@ const LeftPanel = ({
   };
 
   const buttonStyle = isMobile ? {
-    width: '70px',
-    padding: '10px 0',
-    fontSize: '0.8rem',
+    width: isSmallMobile ? '70px' : '80px',
+    padding: isSmallMobile ? '10px 0' : '12px 0',
+    fontSize: isSmallMobile ? '0.75rem' : '0.85rem',
     borderRadius: '8px',
     border: 'none',
     background: '#ffffff',
@@ -62,9 +63,12 @@ const LeftPanel = ({
     transition: 'all 0.2s ease',
     border: '2px solid #000000',
     marginBottom: 0,
-    minHeight: '44px', // Touch-friendly minimum height
+    minHeight: isSmallMobile ? '40px' : '48px', // Touch-friendly minimum height
     touchAction: 'manipulation',
-    WebkitTapHighlightColor: 'rgba(0,0,0,0.1)'
+    WebkitTapHighlightColor: 'rgba(0,0,0,0.1)',
+    // Better mobile styling
+    WebkitUserSelect: 'none',
+    userSelect: 'none'
   } : {
     width: '110px',
     padding: '16px 0',
@@ -93,10 +97,10 @@ const LeftPanel = ({
         <div style={{ 
           display: 'flex', 
           flexDirection: isMobile ? 'row' : 'column', 
-          gap: isMobile ? 10 : 24, 
+          gap: isMobile ? (isSmallMobile ? 8 : 10) : 24, 
           width: '100%', 
           alignItems: 'center', 
-          padding: isMobile ? '0 10px' : '0 20px',
+          padding: isMobile ? (isSmallMobile ? '0 8px' : '0 10px') : '0 20px',
           justifyContent: isMobile ? 'space-around' : 'center'
         }}>
           <button
@@ -110,7 +114,7 @@ const LeftPanel = ({
               color: background === '/pitch_full.png' ? '#ffffff' : '#000000',
             }}
           >
-            {isMobile ? 'Full' : 'Full Field'}
+            {isMobile ? (isSmallMobile ? 'Full' : 'Full') : 'Full Field'}
           </button>
           <button
             onClick={(e) => {
@@ -123,7 +127,7 @@ const LeftPanel = ({
               color: background === '/pitch_half.png' ? '#ffffff' : '#000000',
             }}
           >
-            {isMobile ? 'Half' : 'Half Field'}
+            {isMobile ? (isSmallMobile ? 'Half' : 'Half') : 'Half Field'}
           </button>
           <button
             onClick={(e) => {
@@ -136,7 +140,7 @@ const LeftPanel = ({
               color: background === '/pitch_blank.png' ? '#ffffff' : '#000000',
             }}
           >
-            {isMobile ? 'Blank' : 'Blank'}
+            {isMobile ? (isSmallMobile ? 'Blank' : 'Blank') : 'Blank'}
           </button>
         </div>
       </div>

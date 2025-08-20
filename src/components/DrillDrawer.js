@@ -12,12 +12,14 @@ import BottomPanel from './BottomPanel';
 const getResponsiveConstants = () => {
   const isMobile = isMobileDevice() || window.innerWidth <= 768;
   const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
+  const isSmallMobile = window.innerWidth <= 480;
   
   return {
-    ICON_SIZE: isMobile ? 25 : 30,
-    SIDE_PANEL_WIDTH: isMobile ? 80 : isTablet ? 120 : 150,
+    ICON_SIZE: isMobile ? (isSmallMobile ? 22 : 25) : 30,
+    SIDE_PANEL_WIDTH: isMobile ? (isSmallMobile ? 60 : 80) : isTablet ? 120 : 150,
     isMobile,
-    isTablet
+    isTablet,
+    isSmallMobile
   };
 };
 
@@ -29,9 +31,73 @@ const isMobileDevice = () => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
 };
 
-const DrillDrawer = () => {
+const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMobile: propIsSmallMobile }) => {
   const [responsiveConstants, setResponsiveConstants] = useState(getResponsiveConstants());
   const stageRef = useRef();
+
+  // Use props if provided, otherwise fall back to local state
+  // Ensure we have default values to prevent uninitialized variable errors
+  const isMobile = propIsMobile !== undefined ? propIsMobile : responsiveConstants.isMobile;
+  const isTablet = propIsTablet !== undefined ? propIsTablet : responsiveConstants.isTablet;
+  const isSmallMobile = propIsSmallMobile !== undefined ? propIsSmallMobile : responsiveConstants.isSmallMobile;
+
+  // State declarations - moved to top to prevent uninitialized variable errors
+  const [showMobileSettings, setShowMobileSettings] = useState(false);
+  const [coneSize, setConeSize] = useState('medium');
+  const [coneColor, setConeColor] = useState('orange');
+  const [background, setBackground] = useState('/pitch_full.png');
+  const [imageObj, setImageObj] = useState(null);
+  const [scale, setScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [cones, setCones] = useState([]);
+  const [players, setPlayers] = useState([]);
+  const [footballs, setFootballs] = useState([]);
+  const [lines, setLines] = useState([]);
+  const [labelModeTeam1, setLabelModeTeam1] = useState('plain');
+  const [nextNumberTeam1, setNextNumberTeam1] = useState(1);
+  const [nextLetterTeam1, setNextLetterTeam1] = useState('A');
+  const [nextPlayerNumberTeam1, setNextPlayerNumberTeam1] = useState(1);
+  const [playerColorTeam1, setPlayerColorTeam1] = useState('#2563eb');
+  const [playerStyleTeam1, setPlayerStyleTeam1] = useState('solid');
+  const [playerStripeColorTeam1, setPlayerStripeColorTeam1] = useState('white');
+  const [playerLabelTypeTeam1, setPlayerLabelTypeTeam1] = useState('number');
+  const [playerCustomTextTeam1, setPlayerCustomTextTeam1] = useState('');
+  const [labelModeTeam2, setLabelModeTeam2] = useState('plain');
+  const [nextNumberTeam2, setNextNumberTeam2] = useState(1);
+  const [nextLetterTeam2, setNextLetterTeam2] = useState('A');
+  const [nextPlayerNumberTeam2, setNextPlayerNumberTeam2] = useState(1);
+  const [playerColorTeam2, setPlayerColorTeam2] = useState('#dc2626');
+  const [playerStyleTeam2, setPlayerStyleTeam2] = useState('solid');
+  const [playerStripeColorTeam2, setPlayerStripeColorTeam2] = useState('white');
+  const [playerLabelTypeTeam2, setPlayerLabelTypeTeam2] = useState('number');
+  const [playerCustomTextTeam2, setPlayerCustomTextTeam2] = useState('');
+  const [editingPlayerId, setEditingPlayerId] = useState(null);
+  const [editingText, setEditingText] = useState('');
+  const [editingConeId, setEditingConeId] = useState(null);
+  const [editingFootballId, setEditingFootballId] = useState(null);
+  const [editingLineId, setEditingLineId] = useState(null);
+  const [draggingFromPanel, setDraggingFromPanel] = useState(null);
+  const [dragPosition, setDragPosition] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [htmlDragPos, setHtmlDragPos] = useState(null);
+  const [showHtmlPreview, setShowHtmlPreview] = useState(false);
+  const [lineBarConfig, setLineBarConfig] = useState({
+    mode: 'cursor',
+    color: '#2563eb',
+    thickness: 4,
+    dash: [],
+    arrowStart: false,
+    arrowEnd: true,
+  });
+  const [drawingLine, setDrawingLine] = useState(null);
+  const [selectedLineId, setSelectedLineId] = useState(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [isLineDrawingMode, setIsLineDrawingMode] = useState(false);
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [selectedItems, setSelectedItems] = useState(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // Update responsive constants on window resize
   useEffect(() => {
@@ -51,27 +117,127 @@ const DrillDrawer = () => {
       }
     };
 
+    const handleTouchOutside = (event) => {
+      if (isMobile && showMobileSettings && !event.target.closest('.mobile-settings-panel') && !event.target.closest('.mobile-toolbar')) {
+        setShowMobileSettings(false);
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
+    document.addEventListener('touchstart', handleTouchOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('touchstart', handleTouchOutside);
     };
   }, [isMobile, showMobileSettings]);
 
-  const { ICON_SIZE, SIDE_PANEL_WIDTH, isMobile, isTablet } = responsiveConstants;
+  // Prevent default touch behaviors on mobile
+  useEffect(() => {
+    if (isMobile) {
+      const preventDefaultTouch = (e) => {
+        // Only prevent default for our custom touch areas
+        if (e.target.closest('.mobile-toolbar') || e.target.closest('.mobile-settings-panel')) {
+          e.preventDefault();
+        }
+      };
+
+      // Prevent zoom and other unwanted touch behaviors
+      const preventZoom = (e) => {
+        if (e.touches && e.touches.length > 1) {
+          e.preventDefault();
+        }
+      };
+
+      // Safe event listener addition
+      try {
+        document.addEventListener('touchstart', preventDefaultTouch, { passive: false });
+        document.addEventListener('touchmove', preventDefaultTouch, { passive: false });
+        document.addEventListener('gesturestart', preventZoom, { passive: false });
+        document.addEventListener('gesturechange', preventZoom, { passive: false });
+      } catch (error) {
+        console.log('Touch event listeners not supported:', error.message);
+      }
+
+      return () => {
+        try {
+          document.removeEventListener('touchstart', preventDefaultTouch);
+          document.removeEventListener('touchmove', preventDefaultTouch);
+          document.removeEventListener('gesturestart', preventZoom);
+          document.removeEventListener('gesturechange', preventZoom);
+        } catch (error) {
+          console.log('Touch event cleanup error:', error.message);
+        }
+      };
+    }
+  }, [isMobile]);
+
+  // Optimize mobile performance
+  useEffect(() => {
+    if (isMobile && stageRef.current) {
+      // Reduce animation complexity on mobile
+      document.body.style.setProperty('--mobile-animation-duration', '0.15s');
+      
+      // Optimize canvas rendering for mobile - with proper null checks
+      try {
+        const stage = stageRef.current;
+        if (stage && stage.getLayer && stage.getLayer()) {
+          const layer = stage.getLayer();
+          if (layer && layer.getCanvas && layer.getCanvas()) {
+            const canvas = layer.getCanvas();
+            if (canvas && canvas._canvas) {
+              canvas._canvas.style.touchAction = 'none';
+            }
+          }
+        }
+      } catch (error) {
+        // Silently handle any canvas access errors
+        console.log('Canvas optimization skipped:', error.message);
+      }
+    }
+  }, [isMobile, stageRef.current]);
+
+  // Separate useEffect for stage optimization that runs after stage is mounted
+  useEffect(() => {
+    if (isMobile) {
+      // Wait a bit for the stage to be fully mounted
+      const timer = setTimeout(() => {
+        if (stageRef.current) {
+          try {
+            const stage = stageRef.current;
+            if (stage && stage.getLayer && stage.getLayer()) {
+              const layer = stage.getLayer();
+              if (layer && layer.getCanvas && layer.getCanvas()) {
+                const canvas = layer.getCanvas();
+                if (canvas && canvas._canvas) {
+                  canvas._canvas.style.touchAction = 'none';
+                  // Additional mobile optimizations
+                  canvas._canvas.style.webkitUserSelect = 'none';
+                  canvas._canvas.style.userSelect = 'none';
+                }
+              }
+            }
+          } catch (error) {
+            // Silently handle any canvas access errors
+            console.log('Stage optimization skipped:', error.message);
+          }
+        }
+      }, 100); // Small delay to ensure stage is ready
+
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile]);
+
+  const { ICON_SIZE, SIDE_PANEL_WIDTH } = responsiveConstants;
   
   // Debug logging for mobile detection
   console.log('Mobile Detection:', {
     isMobile,
     isTablet,
+    isSmallMobile,
     windowWidth: window.innerWidth,
     userAgent: navigator.userAgent,
     isMobileDevice: isMobileDevice()
   });
-
-  const [coneSize, setConeSize] = useState('medium');
-  const [coneColor, setConeColor] = useState('orange');
 
   const coneSizeToRadius = {
     small: 10,
@@ -79,73 +245,10 @@ const DrillDrawer = () => {
     large: 20,
   };
 
-  const [background, setBackground] = useState('/pitch_full.png');
-  const [imageObj, setImageObj] = useState(null);
-  const [scale, setScale] = useState(1);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [cones, setCones] = useState([]);
-
-
-  const [players, setPlayers] = useState([]);
-  const [labelModeTeam1, setLabelModeTeam1] = useState('plain');
-  const [nextNumberTeam1, setNextNumberTeam1] = useState(1);
-  const [nextLetterTeam1, setNextLetterTeam1] = useState('A');
-  const [nextPlayerNumberTeam1, setNextPlayerNumberTeam1] = useState(1);
-  const [playerColorTeam1, setPlayerColorTeam1] = useState('#2563eb');
-  const [playerStyleTeam1, setPlayerStyleTeam1] = useState('solid');
-  const [playerStripeColorTeam1, setPlayerStripeColorTeam1] = useState('white');
-  const [playerLabelTypeTeam1, setPlayerLabelTypeTeam1] = useState('number'); // 'none', 'number', 'text'
-  const [playerCustomTextTeam1, setPlayerCustomTextTeam1] = useState('');
-
-  const [labelModeTeam2, setLabelModeTeam2] = useState('plain');
-  const [nextNumberTeam2, setNextNumberTeam2] = useState(1);
-  const [nextLetterTeam2, setNextLetterTeam2] = useState('A');
-  const [nextPlayerNumberTeam2, setNextPlayerNumberTeam2] = useState(1);
-  const [playerColorTeam2, setPlayerColorTeam2] = useState('#dc2626');
-  const [playerStyleTeam2, setPlayerStyleTeam2] = useState('solid');
-  const [playerStripeColorTeam2, setPlayerStripeColorTeam2] = useState('white');
-  const [playerLabelTypeTeam2, setPlayerLabelTypeTeam2] = useState('number'); // 'none', 'number', 'text'
-  const [playerCustomTextTeam2, setPlayerCustomTextTeam2] = useState('');
-
-  const [editingPlayerId, setEditingPlayerId] = useState(null);
-  const [editingText, setEditingText] = useState('');
-  const [editingConeId, setEditingConeId] = useState(null);
-  const [editingFootballId, setEditingFootballId] = useState(null);
-  const [editingLineId, setEditingLineId] = useState(null);
-
-  const [draggingFromPanel, setDraggingFromPanel] = useState(null);
-  const [dragPosition, setDragPosition] = useState(null);
-  const [selectedId, setSelectedId] = useState(null);
-  const [history, setHistory] = useState([]);
-  // Hybrid drag preview state
-  const [draggedItem, setDraggedItem] = useState(null); // { type, id, color, label, index }
-  const [htmlDragPos, setHtmlDragPos] = useState(null); // {x, y}
-  const [showHtmlPreview, setShowHtmlPreview] = useState(false);
-
-  const [lines, setLines] = useState([]); // {id, type, points, color, thickness, dash, arrowStart, arrowEnd}
-  const [lineBarConfig, setLineBarConfig] = useState({
-    mode: 'cursor', // 'cursor' | 'straight' | 'curve' | 'free'
-    color: '#2563eb',
-    thickness: 4,
-    dash: [],
-    arrowStart: false,
-    arrowEnd: true,
-  });
-  const [drawingLine, setDrawingLine] = useState(null); // {type, points, ...}
-  const [selectedLineId, setSelectedLineId] = useState(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [isLineDrawingMode, setIsLineDrawingMode] = useState(false);
-  const [isDeleteMode, setIsDeleteMode] = useState(false);
-  const [showMobileSettings, setShowMobileSettings] = useState(false);
-
-
   // Helper for unique IDs
   const getId = () => Math.floor(Date.now() + Math.random() * 1000);
 
   const [image] = useImage(background, 'Anonymous');
-
-  const [selectedItems, setSelectedItems] = useState(new Set());
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   // Keyboard event handler for delete functionality
   useEffect(() => {
@@ -163,10 +266,6 @@ const DrillDrawer = () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [selectedItems]);
-
-  // 1. Add footballs state
-  const [footballs, setFootballs] = useState([]);
-
 
   useEffect(() => {
     if (image) {
@@ -432,6 +531,9 @@ const DrillDrawer = () => {
       return;
     }
 
+    // Safety check for stage
+    if (!e || !e.target) return;
+
     const clickedOnEmpty = 
       e.target === e.target.getStage() ||
       e.target.getClassName?.() === 'Image';
@@ -439,11 +541,19 @@ const DrillDrawer = () => {
     if (clickedOnEmpty) {
       // Handle delete mode
       if (isDeleteMode) {
-        const stage = e.target.getStage();
-        const pointer = stage.getPointerPosition();
-        const canvasX = (pointer.x - offset.x) / scale;
-        const canvasY = (pointer.y - offset.y) / scale;
-        deleteItemAtPosition(canvasX, canvasY);
+        try {
+          const stage = e.target.getStage();
+          if (stage && stage.getPointerPosition) {
+            const pointer = stage.getPointerPosition();
+            if (pointer) {
+              const canvasX = (pointer.x - offset.x) / scale;
+              const canvasY = (pointer.y - offset.y) / scale;
+              deleteItemAtPosition(canvasX, canvasY);
+            }
+          }
+        } catch (error) {
+          console.log('Delete mode error:', error.message);
+        }
         return;
       }
         
@@ -1144,7 +1254,7 @@ const handleStageMouseUp = (e) => {
   return (
     <div style={{ 
       display: 'flex', 
-      height: isMobile ? 'calc(100vh - 60px)' : '100vh', 
+      height: isMobile ? (isSmallMobile ? 'calc(100vh - 50px)' : 'calc(100vh - 60px)') : '100vh', 
       overflow: 'hidden', 
       alignItems: 'stretch',
       flexDirection: isMobile ? 'column' : 'row',
@@ -1159,21 +1269,25 @@ const handleStageMouseUp = (e) => {
         setLineBarConfig={setLineBarConfig}
         isMobile={isMobile}
         isTablet={isTablet}
+        isSmallMobile={isSmallMobile}
       />
       {/* Field (Pitch) with equal horizontal spacing */}
       <div style={{ 
         flexGrow: 1, 
-        margin: isMobile ? '5px 0' : '0 4px', 
+        margin: isMobile ? (isSmallMobile ? '3px 0' : '5px 0') : '0 4px', 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center', 
         flexDirection: 'column', 
         position: 'relative',
-        minHeight: isMobile ? '300px' : 'auto'
+        minHeight: isMobile ? (isSmallMobile ? '350px' : '450px') : 'auto',
+        // Better mobile layout
+        width: isMobile ? '100%' : 'auto',
+        padding: isMobile ? '0 5px' : '0'
       }}>
         <Stage
-          width={isMobile ? Math.min(window.innerWidth - 20, 600) : Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100)}
-          height={isMobile ? Math.min(window.innerHeight * 0.5, 400) : Math.min(window.innerHeight, 700)}
+          width={isMobile ? (isSmallMobile ? Math.min(window.innerWidth - 10, 600) : Math.min(window.innerWidth - 20, 700)) : Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100)}
+          height={isMobile ? (isSmallMobile ? Math.min(window.innerHeight * 0.6, 500) : Math.min(window.innerHeight * 0.7, 600)) : Math.min(window.innerHeight, 700)}
           onClick={handleStageClick}
           ref={stageRef}
           onMouseMove={e => {
@@ -1210,7 +1324,21 @@ const handleStageMouseUp = (e) => {
             borderRadius: isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? '4px' : '0',
             touchAction: 'none',
             WebkitUserSelect: 'none',
-            userSelect: 'none'
+            userSelect: 'none',
+            // Mobile performance improvements
+            transform: 'translateZ(0)',
+            WebkitTransform: 'translateZ(0)',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            // Better mobile rendering
+            imageRendering: isMobile ? 'optimizeSpeed' : 'auto',
+            // Prevent mobile glitches
+            WebkitTapHighlightColor: 'transparent',
+            // Smooth mobile interactions
+            transition: isMobile ? 'all 0.15s ease' : 'none',
+            // Better mobile sizing
+            maxWidth: isMobile ? '100%' : 'none',
+            maxHeight: isMobile ? '100%' : 'none'
           }}
         >
           <Layer scale={{ x: scale, y: scale }} x={offset.x} y={offset.y}>
@@ -1660,6 +1788,7 @@ const handleStageMouseUp = (e) => {
           setIsDeleteMode={setIsDeleteMode}
           isMobile={isMobile}
           isTablet={isTablet}
+          isSmallMobile={isSmallMobile}
         />
       </div>
       {/* Right Panel */}
@@ -1921,27 +2050,41 @@ const handleStageMouseUp = (e) => {
           className="mobile-toolbar"
           style={{
             position: 'fixed',
-            bottom: '20px',
-            right: '20px',
+            bottom: isSmallMobile ? '20px' : '25px',
+            right: isSmallMobile ? '15px' : '20px',
             backgroundColor: '#ffffff',
             borderRadius: '50px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
             border: '2px solid #000000',
-            padding: '12px',
+            padding: isSmallMobile ? '10px' : '12px',
             zIndex: 1000,
             display: 'flex',
             flexDirection: 'column',
-            gap: '10px',
+            gap: isSmallMobile ? '10px' : '12px',
             touchAction: 'manipulation',
             WebkitUserSelect: 'none',
-            userSelect: 'none'
+            userSelect: 'none',
+            // Improved mobile stability
+            transform: 'translateZ(0)',
+            WebkitTransform: 'translateZ(0)',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            // Better touch handling
+            WebkitTapHighlightColor: 'transparent',
+            // Prevent text selection
+            WebkitTouchCallout: 'none',
+            // Smooth animations
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            // Better mobile positioning
+            minWidth: isSmallMobile ? '60px' : '70px'
           }}
         >
           {/* Cone Tool */}
           <div
+            className="mobile-tool-button"
             style={{
-              width: '56px',
-              height: '56px',
+              width: isSmallMobile ? '52px' : '60px',
+              height: isSmallMobile ? '52px' : '60px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1950,29 +2093,44 @@ const handleStageMouseUp = (e) => {
               borderRadius: '50%',
               border: '2px solid #000000',
               touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'rgba(0,0,0,0.1)',
-              transition: 'transform 0.1s ease'
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'all 0.15s ease',
+              // Better touch feedback
+              WebkitUserSelect: 'none',
+              userSelect: 'none',
+              // Prevent glitches
+              transform: 'translateZ(0)',
+              WebkitTransform: 'translateZ(0)'
             }}
             onTouchStart={(e) => {
               e.preventDefault();
               e.stopPropagation();
               setDraggingFromPanel('cone');
+              // Visual feedback
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(0.95) translateZ(0)';
+              }
             }}
             onTouchEnd={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              // Reset visual feedback
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(1) translateZ(0)';
+              }
             }}
           >
-            <svg width="30" height="30" viewBox="0 0 100 100">
+            <svg width={isSmallMobile ? '26' : '32'} height={isSmallMobile ? '26' : '32'} viewBox="0 0 100 100">
               <polygon points="50,10 90,90 10,90" fill={coneColor} stroke="black" strokeWidth="4" />
             </svg>
           </div>
 
           {/* Team 1 Player */}
           <div
+            className="mobile-tool-button"
             style={{
-              width: '56px',
-              height: '56px',
+              width: isSmallMobile ? '52px' : '60px',
+              height: isSmallMobile ? '52px' : '60px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1981,22 +2139,32 @@ const handleStageMouseUp = (e) => {
               borderRadius: '50%',
               border: '2px solid #000000',
               touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'rgba(0,0,0,0.1)',
-              transition: 'transform 0.1s ease'
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'all 0.15s ease',
+              WebkitUserSelect: 'none',
+              userSelect: 'none',
+              transform: 'translateZ(0)',
+              WebkitTransform: 'translateZ(0)'
             }}
             onTouchStart={(e) => {
               e.preventDefault();
               e.stopPropagation();
               setDraggingFromPanel('team1');
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(0.95) translateZ(0)';
+              }
             }}
             onTouchEnd={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(1) translateZ(0)';
+              }
             }}
           >
-            <svg width="30" height="30">
+            <svg width={isSmallMobile ? '26' : '32'} height={isSmallMobile ? '26' : '32'}>
               <circle cx="15" cy="15" r="14" fill={playerColorTeam1} stroke="black" strokeWidth="1" />
-              <text x="15" y="18" textAnchor="middle" fontSize="12" fill="black" fontWeight="bold">
+              <text x="15" y="18" textAnchor="middle" fontSize={isSmallMobile ? '11' : '13'} fill="black" fontWeight="bold">
                 {nextPlayerNumberTeam1}
               </text>
             </svg>
@@ -2004,9 +2172,10 @@ const handleStageMouseUp = (e) => {
 
           {/* Team 2 Player */}
           <div
+            className="mobile-tool-button"
             style={{
-              width: '56px',
-              height: '56px',
+              width: isSmallMobile ? '52px' : '60px',
+              height: isSmallMobile ? '52px' : '60px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2015,22 +2184,32 @@ const handleStageMouseUp = (e) => {
               borderRadius: '50%',
               border: '2px solid #000000',
               touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'rgba(0,0,0,0.1)',
-              transition: 'transform 0.1s ease'
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'all 0.15s ease',
+              WebkitUserSelect: 'none',
+              userSelect: 'none',
+              transform: 'translateZ(0)',
+              WebkitTransform: 'translateZ(0)'
             }}
             onTouchStart={(e) => {
               e.preventDefault();
               e.stopPropagation();
               setDraggingFromPanel('team2');
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(0.95) translateZ(0)';
+              }
             }}
             onTouchEnd={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(1) translateZ(0)';
+              }
             }}
           >
-            <svg width="30" height="30">
+            <svg width={isSmallMobile ? '26' : '32'} height={isSmallMobile ? '26' : '32'}>
               <circle cx="15" cy="15" r="14" fill={playerColorTeam2} stroke="black" strokeWidth="1" />
-              <text x="15" y="18" textAnchor="middle" fontSize="12" fill="black" fontWeight="bold">
+              <text x="15" y="18" textAnchor="middle" fontSize={isSmallMobile ? '11' : '13'} fill="black" fontWeight="bold">
                 {nextPlayerNumberTeam2}
               </text>
             </svg>
@@ -2038,9 +2217,10 @@ const handleStageMouseUp = (e) => {
 
           {/* Football */}
           <div
+            className="mobile-tool-button"
             style={{
-              width: '56px',
-              height: '56px',
+              width: isSmallMobile ? '52px' : '60px',
+              height: isSmallMobile ? '52px' : '60px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2048,19 +2228,29 @@ const handleStageMouseUp = (e) => {
               backgroundColor: '#f8f9fa',
               borderRadius: '50%',
               border: '2px solid #000000',
-              fontSize: '30px',
+              fontSize: isSmallMobile ? '26px' : '32px',
               touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'rgba(0,0,0,0.1)',
-              transition: 'transform 0.1s ease'
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'all 0.15s ease',
+              WebkitUserSelect: 'none',
+              userSelect: 'none',
+              transform: 'translateZ(0)',
+              WebkitTransform: 'translateZ(0)'
             }}
             onTouchStart={(e) => {
               e.preventDefault();
               e.stopPropagation();
               setDraggingFromPanel('football');
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(0.95) translateZ(0)';
+              }
             }}
             onTouchEnd={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(1) translateZ(0)';
+              }
             }}
           >
             ⚽
@@ -2068,9 +2258,10 @@ const handleStageMouseUp = (e) => {
 
           {/* Undo Button */}
           <div
+            className="mobile-tool-button"
             style={{
-              width: '56px',
-              height: '56px',
+              width: isSmallMobile ? '52px' : '60px',
+              height: isSmallMobile ? '52px' : '60px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2080,28 +2271,39 @@ const handleStageMouseUp = (e) => {
               border: '2px solid #000000',
               color: '#ffffff',
               touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'rgba(255,255,255,0.1)',
-              transition: 'transform 0.1s ease'
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'all 0.15s ease',
+              WebkitUserSelect: 'none',
+              userSelect: 'none',
+              transform: 'translateZ(0)',
+              WebkitTransform: 'translateZ(0)'
             }}
             onClick={undoLast}
             onTouchStart={(e) => {
               e.preventDefault();
               e.stopPropagation();
               undoLast();
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(0.95) translateZ(0)';
+              }
             }}
             onTouchEnd={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(1) translateZ(0)';
+              }
             }}
           >
-            <FaUndo />
+            <FaUndo size={isSmallMobile ? 18 : 22} />
           </div>
 
           {/* Clear All Button */}
           <div
+            className="mobile-tool-button"
             style={{
-              width: '56px',
-              height: '56px',
+              width: isSmallMobile ? '52px' : '60px',
+              height: isSmallMobile ? '52px' : '60px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2110,22 +2312,32 @@ const handleStageMouseUp = (e) => {
               borderRadius: '50%',
               border: '2px solid #000000',
               color: '#ffffff',
-              fontSize: '12px',
+              fontSize: isSmallMobile ? '11px' : '13px',
               textAlign: 'center',
               padding: '5px',
               touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'rgba(255,255,255,0.1)',
-              transition: 'transform 0.1s ease'
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'all 0.15s ease',
+              WebkitUserSelect: 'none',
+              userSelect: 'none',
+              transform: 'translateZ(0)',
+              WebkitTransform: 'translateZ(0)'
             }}
             onClick={clearAllItems}
             onTouchStart={(e) => {
               e.preventDefault();
               e.stopPropagation();
               clearAllItems();
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(0.95) translateZ(0)';
+              }
             }}
             onTouchEnd={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(1) translateZ(0)';
+              }
             }}
           >
             Clear
@@ -2133,9 +2345,10 @@ const handleStageMouseUp = (e) => {
 
           {/* Settings Button */}
           <div
+            className="mobile-tool-button"
             style={{
-              width: '56px',
-              height: '56px',
+              width: isSmallMobile ? '52px' : '60px',
+              height: isSmallMobile ? '52px' : '60px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2144,20 +2357,30 @@ const handleStageMouseUp = (e) => {
               borderRadius: '50%',
               border: '2px solid #000000',
               color: '#ffffff',
-              fontSize: '20px',
+              fontSize: isSmallMobile ? '18px' : '22px',
               touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'rgba(255,255,255,0.1)',
-              transition: 'transform 0.1s ease'
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'all 0.15s ease',
+              WebkitUserSelect: 'none',
+              userSelect: 'none',
+              transform: 'translateZ(0)',
+              WebkitTransform: 'translateZ(0)'
             }}
             onClick={() => setShowMobileSettings(!showMobileSettings)}
             onTouchStart={(e) => {
               e.preventDefault();
               e.stopPropagation();
               setShowMobileSettings(!showMobileSettings);
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(0.95) translateZ(0)';
+              }
             }}
             onTouchEnd={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (e.target && e.target.style) {
+                e.target.style.transform = 'scale(1) translateZ(0)';
+              }
             }}
           >
             ⚙️
@@ -2171,26 +2394,54 @@ const handleStageMouseUp = (e) => {
           className="mobile-settings-panel"
           style={{
             position: 'fixed',
-            bottom: '100px',
-            right: '20px',
+            bottom: isSmallMobile ? '100px' : '120px',
+            right: isSmallMobile ? '15px' : '20px',
             backgroundColor: '#ffffff',
             borderRadius: '12px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
             border: '2px solid #000000',
-            padding: '15px',
+            padding: isSmallMobile ? '15px' : '18px',
             zIndex: 999,
-            minWidth: '200px',
-            maxWidth: '250px',
+            minWidth: isSmallMobile ? '200px' : '240px',
+            maxWidth: isSmallMobile ? '260px' : '300px',
             touchAction: 'manipulation',
             WebkitUserSelect: 'none',
-            userSelect: 'none'
+            userSelect: 'none',
+            // Improved mobile stability
+            transform: 'translateZ(0)',
+            WebkitTransform: 'translateZ(0)',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            // Better touch handling
+            WebkitTapHighlightColor: 'transparent',
+            // Prevent text selection
+            WebkitTouchCallout: 'none',
+            // Smooth animations
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            // Better mobile scrolling
+            maxHeight: '80vh',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch'
           }}
         >
-          <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 'bold' }}>Settings</h4>
+          <h4 style={{ 
+            margin: '0 0 12px 0', 
+            fontSize: isSmallMobile ? '13px' : '15px', 
+            fontWeight: 'bold',
+            WebkitUserSelect: 'none',
+            userSelect: 'none'
+          }}>Settings</h4>
           
           {/* Cone Color */}
-          <div style={{ marginBottom: '10px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ 
+              fontSize: isSmallMobile ? '11px' : '13px', 
+              fontWeight: 'bold', 
+              display: 'block', 
+              marginBottom: '6px',
+              WebkitUserSelect: 'none',
+              userSelect: 'none'
+            }}>
               Cone Color:
             </label>
             <select
@@ -2198,8 +2449,8 @@ const handleStageMouseUp = (e) => {
               onChange={(e) => setConeColor(e.target.value)}
               style={{ 
                 width: '100%', 
-                padding: '12px', 
-                fontSize: '14px', 
+                padding: isSmallMobile ? '12px' : '14px', 
+                fontSize: isSmallMobile ? '13px' : '15px', 
                 borderRadius: '8px', 
                 border: '2px solid #000000',
                 backgroundColor: '#ffffff',
@@ -2210,7 +2461,10 @@ const handleStageMouseUp = (e) => {
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right 8px center',
                 backgroundSize: '12px auto',
-                paddingRight: '30px'
+                paddingRight: '30px',
+                // Better mobile form styling
+                WebkitTapHighlightColor: 'transparent',
+                transition: 'all 0.15s ease'
               }}
             >
               <option value="white">White</option>
@@ -2224,8 +2478,15 @@ const handleStageMouseUp = (e) => {
           </div>
 
           {/* Cone Size */}
-          <div style={{ marginBottom: '10px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ 
+              fontSize: isSmallMobile ? '11px' : '13px', 
+              fontWeight: 'bold', 
+              display: 'block', 
+              marginBottom: '6px',
+              WebkitUserSelect: 'none',
+              userSelect: 'none'
+            }}>
               Cone Size:
             </label>
             <select
@@ -2233,8 +2494,8 @@ const handleStageMouseUp = (e) => {
               onChange={(e) => setConeSize(e.target.value)}
               style={{ 
                 width: '100%', 
-                padding: '12px', 
-                fontSize: '14px', 
+                padding: isSmallMobile ? '12px' : '14px', 
+                fontSize: isSmallMobile ? '13px' : '15px', 
                 borderRadius: '8px', 
                 border: '2px solid #000000',
                 backgroundColor: '#ffffff',
@@ -2245,7 +2506,9 @@ const handleStageMouseUp = (e) => {
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right 8px center',
                 backgroundSize: '12px auto',
-                paddingRight: '30px'
+                paddingRight: '30px',
+                WebkitTapHighlightColor: 'transparent',
+                transition: 'all 0.15s ease'
               }}
             >
               <option value="small">Small</option>
@@ -2255,8 +2518,15 @@ const handleStageMouseUp = (e) => {
           </div>
 
           {/* Team 1 Color */}
-          <div style={{ marginBottom: '10px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ 
+              fontSize: isSmallMobile ? '11px' : '13px', 
+              fontWeight: 'bold', 
+              display: 'block', 
+              marginBottom: '6px',
+              WebkitUserSelect: 'none',
+              userSelect: 'none'
+            }}>
               Team 1 Color:
             </label>
             <select
@@ -2264,8 +2534,8 @@ const handleStageMouseUp = (e) => {
               onChange={(e) => setPlayerColorTeam1(e.target.value)}
               style={{ 
                 width: '100%', 
-                padding: '12px', 
-                fontSize: '14px', 
+                padding: isSmallMobile ? '12px' : '14px', 
+                fontSize: isSmallMobile ? '13px' : '15px', 
                 borderRadius: '8px', 
                 border: '2px solid #000000',
                 backgroundColor: '#ffffff',
@@ -2276,7 +2546,9 @@ const handleStageMouseUp = (e) => {
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right 8px center',
                 backgroundSize: '12px auto',
-                paddingRight: '30px'
+                paddingRight: '30px',
+                WebkitTapHighlightColor: 'transparent',
+                transition: 'all 0.15s ease'
               }}
             >
               <option value="#2563eb">Blue</option>
@@ -2291,8 +2563,15 @@ const handleStageMouseUp = (e) => {
           </div>
 
           {/* Team 2 Color */}
-          <div style={{ marginBottom: '10px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ 
+              fontSize: isSmallMobile ? '11px' : '13px', 
+              fontWeight: 'bold', 
+              display: 'block', 
+              marginBottom: '6px',
+              WebkitUserSelect: 'none',
+              userSelect: 'none'
+            }}>
               Team 2 Color:
             </label>
             <select
@@ -2300,8 +2579,8 @@ const handleStageMouseUp = (e) => {
               onChange={(e) => setPlayerColorTeam2(e.target.value)}
               style={{ 
                 width: '100%', 
-                padding: '12px', 
-                fontSize: '14px', 
+                padding: isSmallMobile ? '12px' : '14px', 
+                fontSize: isSmallMobile ? '13px' : '15px', 
                 borderRadius: '8px', 
                 border: '2px solid #000000',
                 backgroundColor: '#ffffff',
@@ -2312,7 +2591,9 @@ const handleStageMouseUp = (e) => {
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right 8px center',
                 backgroundSize: '12px auto',
-                paddingRight: '30px'
+                paddingRight: '30px',
+                WebkitTapHighlightColor: 'transparent',
+                transition: 'all 0.15s ease'
               }}
             >
               <option value="#2563eb">Blue</option>
@@ -2327,25 +2608,37 @@ const handleStageMouseUp = (e) => {
           </div>
 
           {/* Delete Mode Toggle */}
-          <div style={{ marginBottom: '10px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+          <div style={{ marginBottom: '12px' }}>
+            <label style={{ 
+              fontSize: isSmallMobile ? '11px' : '13px', 
+              fontWeight: 'bold', 
+              display: 'block', 
+              marginBottom: '6px',
+              WebkitUserSelect: 'none',
+              userSelect: 'none'
+            }}>
               Delete Mode:
             </label>
             <button
               onClick={() => setIsDeleteMode(!isDeleteMode)}
               style={{
                 width: '100%',
-                padding: '12px',
-                fontSize: '14px',
+                padding: isSmallMobile ? '12px' : '14px',
+                fontSize: isSmallMobile ? '13px' : '15px',
                 borderRadius: '8px',
                 border: '2px solid #000000',
                 backgroundColor: isDeleteMode ? '#ff4444' : '#ffffff',
                 color: isDeleteMode ? '#ffffff' : '#000000',
                 cursor: 'pointer',
                 touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'rgba(0,0,0,0.1)',
-                transition: 'all 0.2s ease',
-                fontWeight: 'bold'
+                WebkitTapHighlightColor: 'transparent',
+                transition: 'all 0.15s ease',
+                fontWeight: 'bold',
+                // Better mobile button styling
+                WebkitUserSelect: 'none',
+                userSelect: 'none',
+                transform: 'translateZ(0)',
+                WebkitTransform: 'translateZ(0)'
               }}
             >
               {isDeleteMode ? 'Active' : 'Inactive'}

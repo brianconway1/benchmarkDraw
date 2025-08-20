@@ -98,6 +98,46 @@ body {
   }
 }
 
+/* Small mobile specific styles */
+@media (max-width: 480px) {
+  body {
+    font-size: 13px;
+  }
+  
+  /* Smaller touch targets for very small screens */
+  button {
+    min-height: 36px;
+    min-width: 36px;
+  }
+  
+  [role="button"], 
+  button, 
+  input[type="button"], 
+  input[type="submit"], 
+  input[type="reset"] {
+    min-height: 36px;
+    min-width: 36px;
+  }
+  
+  /* Better spacing for small screens */
+  .mobile-toolbar {
+    gap: 6px;
+    padding: 8px;
+  }
+  
+  .mobile-settings-panel {
+    padding: 10px;
+    min-width: 160px;
+    max-width: 200px;
+  }
+  
+  /* Improve form elements on small screens */
+  select, input {
+    padding: 8px;
+    font-size: 14px;
+  }
+}
+
 /* Tablet-specific styles */
 @media (min-width: 769px) and (max-width: 1024px) {
   body {
@@ -216,16 +256,171 @@ input, textarea {
   }
 }
 
+/* Mobile-specific improvements for better touch interactions */
+@media (max-width: 768px) {
+  /* Improve touch feedback */
+  .mobile-toolbar > div:active {
+    transform: scale(0.95) translateZ(0) !important;
+    transition: transform 0.1s ease !important;
+  }
+  
+  /* Better mobile button states */
+  button:active {
+    transform: scale(0.98) translateZ(0) !important;
+  }
+  
+  /* Improve mobile form elements */
+  select, input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 8px;
+    border: 2px solid #000000;
+    font-size: 16px;
+    padding: 12px;
+    background-color: #ffffff;
+    color: #000000;
+    font-weight: 600;
+    /* Better mobile performance */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  
+  /* Mobile-specific focus states */
+  button:focus, input:focus, select:focus {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  }
+  
+  /* Better mobile scrolling */
+  .mobile-settings-panel {
+    max-height: 80vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Prevent scroll chaining */
+    overscroll-behavior: contain;
+  }
+  
+  /* Improve mobile canvas performance */
+  canvas {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    touch-action: none;
+    /* Better mobile rendering */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  
+  /* Better mobile button sizing */
+  .mobile-toolbar > div {
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    /* Prevent glitches */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform;
+  }
+  
+  .mobile-toolbar > div:hover {
+    transform: translateY(-2px) translateZ(0) !important;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+  }
+  
+  /* Mobile tool button specific improvements */
+  .mobile-tool-button {
+    /* Prevent text selection */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Better touch handling */
+    -webkit-tap-highlight-color: transparent;
+    /* Prevent glitches */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    /* Smooth transitions */
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+  
+  /* Prevent mobile zoom on double tap */
+  * {
+    touch-action: manipulation;
+  }
+  
+  /* Better mobile form performance */
+  .mobile-settings-panel select,
+  .mobile-settings-panel input,
+  .mobile-settings-panel button {
+    /* Hardware acceleration */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    /* Prevent glitches */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    /* Smooth transitions */
+    transition: all 0.15s ease;
+  }
+  
+  /* Improve mobile scrolling performance */
+  .mobile-settings-panel {
+    /* Better scroll performance */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    /* Prevent scroll chaining */
+    scroll-behavior: smooth;
+  }
+  
+  /* Mobile-specific animations */
+  .mobile-toolbar {
+    animation: fadeIn 0.2s ease-out;
+  }
+  
+  /* Better mobile touch targets */
+  .mobile-toolbar > div,
+  .mobile-settings-panel button,
+  .mobile-settings-panel select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
 /* Landscape mobile optimizations */
 @media (max-width: 768px) and (orientation: landscape) {
   /* Adjust layout for landscape mode */
-  body {
-    font-size: 12px;
+  .mobile-toolbar {
+    flex-direction: row;
+    bottom: 10px;
+    right: 10px;
+    gap: 8px;
+    padding: 8px;
   }
   
-  /* Smaller touch targets in landscape */
-  button {
-    min-height: 36px;
-    min-width: 36px;
+  .mobile-toolbar > div {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .mobile-settings-panel {
+    bottom: 60px;
+    right: 10px;
+  }
+  
+  /* Reduce margins in landscape */
+  body {
+    padding: 2px;
+  }
+  
+  /* Smaller header in landscape */
+  .mobile-toolbar + div {
+    margin-bottom: 5px;
   }
 }

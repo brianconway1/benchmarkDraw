@@ -45,6 +45,7 @@ const BottomPanel = ({
   setIsDeleteMode,
   isMobile,
   isTablet,
+  isSmallMobile
 }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [activeTab, setActiveTab] = useState('line');
@@ -114,8 +115,8 @@ const BottomPanel = ({
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        margin: isMobile ? '5px 0' : '24px 0',
-        padding: isMobile ? '0 4px' : '0 16px',
+        margin: isMobile ? (isSmallMobile ? '3px 0' : '5px 0') : '24px 0',
+        padding: isMobile ? (isSmallMobile ? '0 2px' : '0 4px') : '0 16px',
         position: 'relative',
         touchAction: 'manipulation'
       }}
@@ -129,15 +130,15 @@ const BottomPanel = ({
         border: '2px solid #000000',
         touchAction: 'manipulation'
       }}>
-        <CardContent sx={{ padding: isMobile ? '8px !important' : '16px !important' }}>
+        <CardContent sx={{ padding: isMobile ? (isSmallMobile ? '6px !important' : '8px !important') : '16px !important' }}>
           <Box
             sx={{
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: isMobile ? 1 : 4,
+              gap: isMobile ? (isSmallMobile ? 0.5 : 1) : 4,
               flexWrap: 'wrap',
-              minHeight: isMobile ? '40px' : '60px',
+              minHeight: isMobile ? (isSmallMobile ? '32px' : '40px') : '60px',
               flexDirection: isMobile ? 'column' : 'row'
             }}
           >
@@ -156,6 +157,8 @@ const BottomPanel = ({
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
+              fontSize: isMobile ? (isSmallMobile ? '0.7rem' : '0.8rem') : '1rem',
+              padding: isMobile ? (isSmallMobile ? '6px 12px' : '8px 16px') : '10px 24px',
               '&:hover': {
                 background: '#ffffff',
                 color: '#000000',
@@ -174,8 +177,8 @@ const BottomPanel = ({
       <Box sx={{ 
         display: 'flex', 
         alignItems: 'center', 
-        gap: isMobile ? 0.5 : 1.5, 
-        flexWrap: isMobile ? 'wrap' : 'nowrap', 
+        gap: isMobile ? (isSmallMobile ? 0.3 : 0.5) : 1.5, 
+        flexWrap: 'wrap', 
         minWidth: isMobile ? '100%' : 800,
         flexDirection: isMobile ? 'column' : 'row'
       }}>
@@ -186,14 +189,14 @@ const BottomPanel = ({
               gap: 1, 
               minWidth: isMobile ? '100%' : 100, 
               justifyContent: 'center',
-              marginBottom: isMobile ? 1 : 0
+              marginBottom: isMobile ? (isSmallMobile ? 0.5 : 1) : 0
             }}>
               <Typography variant="body2" sx={{ 
                 fontWeight: 700, 
                 color: '#000000', 
                 textTransform: 'uppercase', 
                 letterSpacing: '0.5px',
-                fontSize: isMobile ? '0.75rem' : '0.875rem',
+                fontSize: isMobile ? (isSmallMobile ? '0.65rem' : '0.75rem') : '0.875rem',
                 textAlign: 'center'
               }}>
                 Line Drawer
@@ -223,6 +226,8 @@ const BottomPanel = ({
                   color: '#000000',
                   borderColor: '#000000',
                   backgroundColor: '#ffffff',
+                  fontSize: isMobile ? (isSmallMobile ? '0.7rem' : '0.8rem') : '0.875rem',
+                  padding: isMobile ? (isSmallMobile ? '4px 6px' : '6px 8px') : '8px 12px',
                   '&.Mui-selected': {
                     backgroundColor: '#000000',
                     color: '#ffffff',
@@ -238,7 +243,7 @@ const BottomPanel = ({
             >
               {lineModes.map((mode) => (
                 <Tooltip key={mode.value} title={mode.name} arrow>
-                  <ToggleButton value={mode.value} size="small" sx={{ px: 1 }}>
+                  <ToggleButton value={mode.value} size="small" sx={{ px: isMobile ? (isSmallMobile ? 0.5 : 1) : 1 }}>
                     {mode.icon}
                   </ToggleButton>
                 </Tooltip>
@@ -257,21 +262,22 @@ const BottomPanel = ({
                 sx={{
                   borderColor: '#000000',
                   color: '#000000',
-                  minWidth: 40,
-                  px: 1,
+                  minWidth: isMobile ? (isSmallMobile ? 32 : 36) : 40,
+                  px: isMobile ? (isSmallMobile ? 0.5 : 1) : 1,
                   fontWeight: 600,
+                  fontSize: isMobile ? (isSmallMobile ? '0.7rem' : '0.8rem') : '0.875rem',
                   '&:hover': {
                     borderColor: '#000000',
                     backgroundColor: 'rgba(0, 0, 0, 0.1)'
                   }
                 }}
               >
-                <FormatColorFill fontSize="small" />
+                <FormatColorFill fontSize={isMobile ? (isSmallMobile ? 'small' : 'small') : 'small'} />
               </Button>
             </Box>
 
             {/* Dash Pattern */}
-            <FormControl size="small" sx={{ minWidth: 90 }}>
+            <FormControl size="small" sx={{ minWidth: isMobile ? (isSmallMobile ? 70 : 80) : 90 }}>
               <Select
           value={lineBarConfig.dash.join(',')}
                 onChange={(e) => {
@@ -284,6 +290,7 @@ const BottomPanel = ({
                     color: '#000000',
                     borderColor: '#000000',
                     backgroundColor: '#ffffff',
+                    fontSize: isMobile ? (isSmallMobile ? '0.7rem' : '0.8rem') : '0.875rem',
                     '& fieldset': {
                       borderColor: '#000000',
                     },
@@ -324,6 +331,7 @@ const BottomPanel = ({
                     sx={{
                       color: '#000000',
                       backgroundColor: '#ffffff',
+                      fontSize: isMobile ? (isSmallMobile ? '0.7rem' : '0.8rem') : '0.875rem',
                       '&:hover': {
                         backgroundColor: 'rgba(0, 0, 0, 0.1)',
                       },
@@ -342,7 +350,7 @@ const BottomPanel = ({
             </FormControl>
 
             {/* Arrow Configuration */}
-            <FormControl size="small" sx={{ minWidth: 110 }}>
+            <FormControl size="small" sx={{ minWidth: isMobile ? (isSmallMobile ? 90 : 100) : 110 }}>
               <Tooltip 
                 title={lineBarConfig.mode === 'free' ? "Cannot add arrow heads in free draw mode" : ""}
                 arrow
@@ -363,6 +371,7 @@ const BottomPanel = ({
                       color: lineBarConfig.mode === 'free' ? '#999999' : '#000000',
                       borderColor: lineBarConfig.mode === 'free' ? '#cccccc' : '#000000',
                       backgroundColor: lineBarConfig.mode === 'free' ? '#f5f5f5' : '#ffffff',
+                      fontSize: isMobile ? (isSmallMobile ? '0.7rem' : '0.8rem') : '0.875rem',
                       '& fieldset': {
                         borderColor: lineBarConfig.mode === 'free' ? '#cccccc' : '#000000',
                       },
@@ -403,6 +412,7 @@ const BottomPanel = ({
                       sx={{
                         color: '#000000',
                         backgroundColor: '#ffffff',
+                        fontSize: isMobile ? (isSmallMobile ? '0.7rem' : '0.8rem') : '0.875rem',
                         '&:hover': {
                           backgroundColor: 'rgba(0, 0, 0, 0.1)',
                         },
@@ -422,8 +432,8 @@ const BottomPanel = ({
             </FormControl>
 
             {/* Thickness Slider */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 120 }}>
-              <Typography variant="caption" sx={{ color: '#000000', fontSize: '0.7rem', whiteSpace: 'nowrap', fontWeight: 600, textTransform: 'uppercase' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: isMobile ? (isSmallMobile ? 100 : 110) : 120 }}>
+              <Typography variant="caption" sx={{ color: '#000000', fontSize: isMobile ? (isSmallMobile ? '0.6rem' : '0.65rem') : '0.7rem', whiteSpace: 'nowrap', fontWeight: 600, textTransform: 'uppercase' }}>
                 Width
               </Typography>
               <Slider
@@ -436,30 +446,30 @@ const BottomPanel = ({
                 sx={{
                   '& .MuiSlider-thumb': {
                     backgroundColor: '#000000',
-                    width: 12,
-                    height: 12,
+                    width: isMobile ? (isSmallMobile ? 10 : 11) : 12,
+                    height: isMobile ? (isSmallMobile ? 10 : 11) : 12,
                   },
                   '& .MuiSlider-track': {
                     backgroundColor: '#000000',
-                    height: 2,
+                    height: isMobile ? (isSmallMobile ? 1.5 : 2) : 2,
                   },
                   '& .MuiSlider-rail': {
                     backgroundColor: '#cccccc',
-                    height: 2,
+                    height: isMobile ? (isSmallMobile ? 1.5 : 2) : 2,
                   }
                 }}
               />
-              <Typography variant="caption" sx={{ color: '#000000', fontSize: '0.7rem', whiteSpace: 'nowrap', fontWeight: 600 }}>
+              <Typography variant="caption" sx={{ color: '#000000', fontSize: isMobile ? (isSmallMobile ? '0.6rem' : '0.65rem') : '0.7rem', whiteSpace: 'nowrap', fontWeight: 600 }}>
                 {lineBarConfig.thickness}px
               </Typography>
             </Box>
 
             {/* Line Preview */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 130 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: isMobile ? (isSmallMobile ? 110 : 120) : 130 }}>
                               <Box
                   sx={{
-                    width: 120,
-                    height: 32,
+                    width: isMobile ? (isSmallMobile ? 100 : 110) : 120,
+                    height: isMobile ? (isSmallMobile ? 28 : 30) : 32,
                     border: 1,
                     borderColor: '#000000',
                     borderRadius: 1,
@@ -521,7 +531,7 @@ const BottomPanel = ({
                   )}
           </svg>
               </Box>
-              <Typography variant="caption" sx={{ color: '#000000', fontStyle: 'italic', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase' }}>
+              <Typography variant="caption" sx={{ color: '#000000', fontStyle: 'italic', fontSize: isMobile ? (isSmallMobile ? '0.6rem' : '0.65rem') : '0.7rem', fontWeight: 600, textTransform: 'uppercase' }}>
                 {lineBarConfig.mode === 'straight' ? 'Straight' : lineBarConfig.mode === 'curve' ? 'Curved' : 'Free Draw'}
               </Typography>
             </Box>
@@ -533,7 +543,7 @@ const BottomPanel = ({
           ref={colorPickerRef}
           sx={{
             position: 'absolute',
-            top: '-200px',
+            top: isMobile ? '-180px' : '-200px',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 9999,
@@ -548,7 +558,7 @@ const BottomPanel = ({
           <HexColorPicker
             color={lineBarConfig.color}
             onChange={(color) => setLineBarConfig(c => ({ ...c, color }))}
-            style={{ width: 150, height: 150 }}
+            style={{ width: isMobile ? (isSmallMobile ? 120 : 140) : 150, height: isMobile ? (isSmallMobile ? 120 : 140) : 150 }}
           />
         </Box>
       )}
