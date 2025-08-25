@@ -1411,29 +1411,32 @@ const handleStageMouseUp = (e) => {
       />
       )}
       {/* Field (Pitch) with equal horizontal spacing */}
-      <div style={{ 
-        flexGrow: 1, 
-        margin: isMobile ? (isSmallMobile ? '3px 0' : '5px 0') : '0 4px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        flexDirection: 'column', 
-        position: 'relative',
-        minHeight: isMobile ? (window.innerWidth > window.innerHeight ? '600px' : (isSmallMobile ? '900px' : '1000px')) : 'auto',
-        // Better mobile layout
-        width: isMobile ? '100%' : 'auto',
-        padding: isMobile ? '0 5px' : '0'
-        // Removed overflow to prevent scroll conflicts
-      }}>
+      <div 
+        className="drill-drawer-container"
+        style={{ 
+          flexGrow: 1, 
+          margin: isMobile ? (isSmallMobile ? '3px 0' : '5px 0') : '0 4px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          flexDirection: 'column', 
+          position: 'relative',
+          minHeight: isMobile ? (window.innerWidth > window.innerHeight ? '600px' : (isSmallMobile ? '900px' : '1000px')) : 'auto',
+          // Better mobile layout
+          width: isMobile ? '100%' : 'auto',
+          padding: isMobile ? '0 5px' : '0'
+          // Removed overflow to prevent scroll conflicts
+        }}
+      >
         <TransformWrapper
           initialScale={1}
           minScale={0.5}
           maxScale={3}
           limitToBounds={false}
           centerOnInit={true}
-          wheel={{ step: 0.1 }}
-          pinch={{ step: 5 }}
-          doubleClick={{ step: 1.5 }}
+          wheel={{ disabled: !isMobile }}
+          pinch={{ disabled: !isMobile, step: 5 }}
+          doubleClick={{ disabled: !isMobile, step: 1.5 }}
           panning={{ disabled: true }}
         >
           <TransformComponent>
@@ -1483,7 +1486,7 @@ const handleStageMouseUp = (e) => {
                 cursor: isDeleteMode ? 'crosshair' : (isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? 'crosshair' : 'default'),
                 border: isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? '2px solid #2196F3' : 'none',
                 borderRadius: isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? '4px' : '0',
-                touchAction: (isDrawing || isLineDrawingMode || isDeleteMode) ? 'none' : 'pan-y',
+                touchAction: isMobile ? ((isDrawing || isLineDrawingMode || isDeleteMode) ? 'none' : 'pan-y') : 'auto',
                 WebkitUserSelect: 'none',
                 userSelect: 'none',
                 // Mobile performance improvements

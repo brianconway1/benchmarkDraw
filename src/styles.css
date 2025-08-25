@@ -465,6 +465,30 @@ input, textarea {
   touch-action: pan-y;
 }
 
+/* Desktop-specific styles - ensure normal scrolling */
+@media (min-width: 769px) {
+  .drill-drawer-container {
+    /* Allow normal scrolling on desktop */
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Ensure scrollbars are visible */
+    scrollbar-width: auto;
+    scrollbar-color: rgba(0,0,0,0.3) transparent;
+  }
+  
+  /* Ensure Konva stage doesn't interfere with scrolling on desktop */
+  .konvajs-content {
+    touch-action: auto;
+    /* Allow normal mouse wheel scrolling */
+    pointer-events: auto;
+  }
+  
+  /* Prevent any touch action interference on desktop */
+  .konvajs-content:not(.drawing-mode) {
+    touch-action: auto;
+  }
+}
+
 /* Ensure Konva stage allows scrolling when not drawing */
 .konvajs-content {
   touch-action: pan-y;
@@ -473,4 +497,44 @@ input, textarea {
 /* When in drawing mode, restrict touch actions */
 .konvajs-content.drawing-mode {
   touch-action: none;
+}
+
+/* Desktop-specific TransformWrapper overrides */
+@media (min-width: 769px) {
+  /* Ensure TransformWrapper doesn't interfere with desktop scrolling */
+  .react-transform-wrapper {
+    touch-action: auto !important;
+    pointer-events: auto !important;
+  }
+  
+  /* Override any transform wrapper styles that might interfere */
+  .react-transform-wrapper > div {
+    touch-action: auto !important;
+    pointer-events: auto !important;
+  }
+  
+  /* Ensure the main container allows scrolling */
+  .drill-drawer-container {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Force scrollbars to be visible on desktop */
+  .drill-drawer-container::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .drill-drawer-container::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1);
+    border-radius: 4px;
+  }
+  
+  .drill-drawer-container::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.3);
+    border-radius: 4px;
+  }
+  
+  .drill-drawer-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.5);
+  }
 }
