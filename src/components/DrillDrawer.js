@@ -1599,7 +1599,7 @@ const handleStageMouseUp = (e) => {
 
                 {draggingFromPanel === 'cone' && dragPosition && (
                     <RegularPolygon
-                      x={(dragPosition.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale}
+                      x={(dragPosition.x - offset.x - ICON_SIZE / 2) / scale}
                       y={(dragPosition.y - offset.y - ICON_SIZE / 2) / scale}
                       sides={3}
                       radius={coneSizeToRadius[coneSize]}
@@ -1612,7 +1612,7 @@ const handleStageMouseUp = (e) => {
                 )}
                 {(draggingFromPanel === 'team1' || draggingFromPanel === 'team2') && dragPosition && (
                     <Group
-                      x={(dragPosition.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale}
+                      x={(dragPosition.x - offset.x - ICON_SIZE / 2) / scale}
                       y={(dragPosition.y - offset.y - ICON_SIZE / 2) / scale}
                     >
                       {(() => {
@@ -1690,9 +1690,9 @@ const handleStageMouseUp = (e) => {
                 {draggingFromPanel === 'line' && dragPosition && (
                   <Arrow
                     points={[
-                      (dragPosition.x - SIDE_PANEL_WIDTH - offset.x - 40) / scale,
+                      (dragPosition.x - offset.x - 40) / scale,
                       (dragPosition.y - offset.y) / scale,
-                      (dragPosition.x - SIDE_PANEL_WIDTH - offset.x + 40) / scale,
+                      (dragPosition.x - offset.x + 40) / scale,
                       (dragPosition.y - offset.y) / scale,
                     ]}
                     stroke={lineBarConfig.color || '#2563eb'}
@@ -1710,7 +1710,7 @@ const handleStageMouseUp = (e) => {
                   <Text
                     text="⚽"
                     fontSize={ICON_SIZE}
-                    x={(dragPosition.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale}
+                    x={(dragPosition.x - offset.x - ICON_SIZE / 2) / scale}
                     y={(dragPosition.y - offset.y - ICON_SIZE / 2) / scale}
                     opacity={0.6}
                   />
