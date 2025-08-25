@@ -249,9 +249,30 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
     isTablet,
     isSmallMobile,
     windowWidth: window.innerWidth,
+    windowHeight: window.innerHeight,
+    isLandscape: window.innerWidth > window.innerHeight,
     userAgent: navigator.userAgent,
     isMobileDevice: isMobileDevice()
   });
+
+  // Enable mobile scrolling
+  useEffect(() => {
+    if (isMobile) {
+      // Ensure body and html allow scrolling
+      document.body.style.overflow = 'auto';
+      document.body.style.WebkitOverflowScrolling = 'touch';
+      document.documentElement.style.overflow = 'auto';
+      document.documentElement.style.WebkitOverflowScrolling = 'touch';
+      
+      return () => {
+        // Reset on cleanup
+        document.body.style.overflow = '';
+        document.body.style.WebkitOverflowScrolling = '';
+        document.documentElement.style.overflow = '';
+        document.documentElement.style.WebkitOverflowScrolling = '';
+      };
+    }
+  }, [isMobile]);
 
   const coneSizeToRadius = {
     small: 10,
@@ -292,7 +313,7 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
       
       // Calculate scale to fit image within Stage dimensions
       const stageWidth = isMobile ? (isSmallMobile ? Math.min(window.innerWidth - 10, 600) : Math.min(window.innerWidth - 20, 700)) : Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100);
-      const stageHeight = isMobile ? (window.innerWidth > window.innerHeight ? Math.min(window.innerHeight - 100, 500) : window.innerHeight - 150) : Math.min(window.innerHeight, 700);
+      const stageHeight = isMobile ? (window.innerWidth > window.innerHeight ? Math.min(window.innerHeight - 60, 350) : window.innerHeight - 150) : Math.min(window.innerHeight, 700);
       
       const widthRatio = stageWidth / image.width;
       const heightRatio = stageHeight / image.height;
@@ -301,7 +322,7 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
       
       // Center the image in the Stage
       const offsetX = (stageWidth - image.width * scaleFactor) / 2;
-      const offsetY = isMobile ? (window.innerWidth > window.innerHeight ? 10 : 20) : (stageHeight - image.height * scaleFactor) / 2; // Adjust for orientation
+      const offsetY = isMobile ? (window.innerWidth > window.innerHeight ? 5 : 20) : (stageHeight - image.height * scaleFactor) / 2; // Adjust for orientation
       setOffset({ x: offsetX, y: offsetY });
     }
   }, [image, SIDE_PANEL_WIDTH, isMobile, isTablet, isSmallMobile]);
@@ -1276,7 +1297,8 @@ const handleStageMouseUp = (e) => {
     <div style={{ 
       display: 'flex', 
       height: isMobile ? (isSmallMobile ? 'calc(100vh - 50px)' : 'calc(100vh - 60px)') : '100vh', 
-      overflow: 'hidden', 
+      overflow: 'auto', 
+      WebkitOverflowScrolling: 'touch',
       alignItems: 'stretch',
       flexDirection: isMobile ? 'column' : 'row',
       position: 'relative'
@@ -1346,14 +1368,17 @@ const handleStageMouseUp = (e) => {
         justifyContent: 'center', 
         flexDirection: 'column', 
         position: 'relative',
-        minHeight: isMobile ? (isSmallMobile ? '900px' : '1000px') : 'auto',
+        minHeight: isMobile ? (window.innerWidth > window.innerHeight ? '300px' : (isSmallMobile ? '900px' : '1000px')) : 'auto',
         // Better mobile layout
         width: isMobile ? '100%' : 'auto',
-        padding: isMobile ? '0 5px' : '0'
+        padding: isMobile ? '0 5px' : '0',
+        // Enable scrolling
+        overflow: 'auto',
+        WebkitOverflowScrolling: 'touch'
       }}>
         <Stage
           width={isMobile ? (isSmallMobile ? Math.min(window.innerWidth - 10, 600) : Math.min(window.innerWidth - 20, 700)) : Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100)}
-          height={isMobile ? (window.innerWidth > window.innerHeight ? Math.min(window.innerHeight - 100, 500) : window.innerHeight - 150) : Math.min(window.innerHeight, 700)}
+          height={isMobile ? (window.innerWidth > window.innerHeight ? Math.min(window.innerHeight - 60, 350) : window.innerHeight - 150) : Math.min(window.innerHeight, 700)}
           onClick={handleStageClick}
           ref={stageRef}
           onMouseMove={e => {
