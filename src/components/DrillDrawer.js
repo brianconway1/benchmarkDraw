@@ -42,7 +42,9 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
   const isSmallMobile = propIsSmallMobile !== undefined ? propIsSmallMobile : responsiveConstants.isSmallMobile;
 
   // State declarations - moved to top to prevent uninitialized variable errors
-  const [showMobileSettings, setShowMobileSettings] = useState(false);
+  const [showMobileIcons, setShowMobileIcons] = useState(false);
+  const [showMobileLines, setShowMobileLines] = useState(false);
+  const [showMobileField, setShowMobileField] = useState(false);
   const [coneSize, setConeSize] = useState('medium');
   const [coneColor, setConeColor] = useState('orange');
   const [background, setBackground] = useState('/pitch_full.png');
@@ -112,14 +114,26 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
   // Close mobile settings when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (isMobile && showMobileSettings && !event.target.closest('.mobile-settings-panel') && !event.target.closest('.mobile-toolbar')) {
-        setShowMobileSettings(false);
+      if (isMobile && (showMobileIcons || showMobileLines || showMobileField) && 
+          !event.target.closest('.mobile-icons-menu') && 
+          !event.target.closest('.mobile-lines-menu') && 
+          !event.target.closest('.mobile-field-menu') && 
+          !event.target.closest('.mobile-floating-button')) {
+        setShowMobileIcons(false);
+        setShowMobileLines(false);
+        setShowMobileField(false);
       }
     };
 
     const handleTouchOutside = (event) => {
-      if (isMobile && showMobileSettings && !event.target.closest('.mobile-settings-panel') && !event.target.closest('.mobile-toolbar')) {
-        setShowMobileSettings(false);
+      if (isMobile && (showMobileIcons || showMobileLines || showMobileField) && 
+          !event.target.closest('.mobile-icons-menu') && 
+          !event.target.closest('.mobile-lines-menu') && 
+          !event.target.closest('.mobile-field-menu') && 
+          !event.target.closest('.mobile-floating-button')) {
+        setShowMobileIcons(false);
+        setShowMobileLines(false);
+        setShowMobileField(false);
       }
     };
 
@@ -129,7 +143,7 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleTouchOutside);
     };
-  }, [isMobile, showMobileSettings]);
+  }, [isMobile, showMobileIcons, showMobileLines, showMobileField]);
 
   // Prevent default touch behaviors on mobile
   useEffect(() => {
@@ -1260,17 +1274,62 @@ const handleStageMouseUp = (e) => {
       flexDirection: isMobile ? 'column' : 'row',
       position: 'relative'
     }}>
-      {/* Left Panel */}
-      <LeftPanel
-        SIDE_PANEL_WIDTH={SIDE_PANEL_WIDTH}
-        background={background}
-        setBackground={setBackground}
-        setIsLineDrawingMode={setIsLineDrawingMode}
-        setLineBarConfig={setLineBarConfig}
-        isMobile={isMobile}
-        isTablet={isTablet}
-        isSmallMobile={isSmallMobile}
-      />
+      {/* Right Panel (now positioned on the left) */}
+      {!isMobile && (
+        <RightPanel
+          SIDE_PANEL_WIDTH={SIDE_PANEL_WIDTH}
+          background={background}
+          setBackground={setBackground}
+          coneColor={coneColor}
+          setConeColor={setConeColor}
+          coneSize={coneSize}
+          setConeSize={setConeSize}
+          labelModeTeam1={labelModeTeam1}
+          setLabelModeTeam1={setLabelModeTeam1}
+          labelModeTeam2={labelModeTeam2}
+          setLabelModeTeam2={setLabelModeTeam2}
+          getNextLabel={getNextLabel}
+          draggingFromPanel={draggingFromPanel}
+          setDraggingFromPanel={setDraggingFromPanel}
+          undoLast={undoLast}
+          editingPlayerId={editingPlayerId}
+          editingText={editingText}
+          setEditingText={setEditingText}
+          handleEditComplete={handleEditComplete}
+          setDragPosition={setDragPosition}
+          playerColorTeam1={playerColorTeam1}
+          setPlayerColorTeam1={setPlayerColorTeam1}
+          playerColorTeam2={playerColorTeam2}
+          setPlayerColorTeam2={setPlayerColorTeam2}
+          playerStyleTeam1={playerStyleTeam1}
+          setPlayerStyleTeam1={setPlayerStyleTeam1}
+          playerStyleTeam2={playerStyleTeam2}
+          setPlayerStyleTeam2={setPlayerStyleTeam2}
+          playerStripeColorTeam1={playerStripeColorTeam1}
+          setPlayerStripeColorTeam1={setPlayerStripeColorTeam1}
+          playerStripeColorTeam2={playerStripeColorTeam2}
+          setPlayerStripeColorTeam2={setPlayerStripeColorTeam2}
+          playerLabelTypeTeam1={playerLabelTypeTeam1}
+          setPlayerLabelTypeTeam1={setPlayerLabelTypeTeam1}
+          playerLabelTypeTeam2={playerLabelTypeTeam2}
+          setPlayerLabelTypeTeam2={setPlayerLabelTypeTeam2}
+          playerCustomTextTeam1={playerCustomTextTeam1}
+          setPlayerCustomTextTeam1={setPlayerCustomTextTeam1}
+          playerCustomTextTeam2={playerCustomTextTeam2}
+          setPlayerCustomTextTeam2={setPlayerCustomTextTeam2}
+          nextPlayerNumberTeam1={nextPlayerNumberTeam1}
+          nextPlayerNumberTeam2={nextPlayerNumberTeam2}
+          deleteSelectedItems={deleteSelectedItems}
+          clearAllItems={clearAllItems}
+          setIsLineDrawingMode={setIsLineDrawingMode}
+          setLineBarConfig={setLineBarConfig}
+          lineBarConfig={lineBarConfig}
+          isDeleteMode={isDeleteMode}
+          setIsDeleteMode={setIsDeleteMode}
+          isMobile={isMobile}
+          isTablet={isTablet}
+        />
+      )}
       {/* Field (Pitch) with equal horizontal spacing */}
       <div style={{ 
         flexGrow: 1, 
@@ -1776,74 +1835,119 @@ const handleStageMouseUp = (e) => {
 
           </Layer>
         </Stage>
-        <BottomPanel
-          stageRef={stageRef}
-          lineBarConfig={lineBarConfig}
-          setLineBarConfig={setLineBarConfig}
-          setDraggingFromPanel={setDraggingFromPanel}
-          ICON_SIZE={ICON_SIZE}
-          isLineDrawingMode={isLineDrawingMode}
-          setIsLineDrawingMode={setIsLineDrawingMode}
-          isDeleteMode={isDeleteMode}
-          setIsDeleteMode={setIsDeleteMode}
-          isMobile={isMobile}
-          isTablet={isTablet}
-          isSmallMobile={isSmallMobile}
-        />
+        {/* Bottom Panel - Line Drawing Controls */}
+        {!isMobile && (
+          <BottomPanel
+            stageRef={stageRef}
+            lineBarConfig={lineBarConfig}
+            setLineBarConfig={setLineBarConfig}
+            setDraggingFromPanel={setDraggingFromPanel}
+            ICON_SIZE={ICON_SIZE}
+            isLineDrawingMode={isLineDrawingMode}
+            setIsLineDrawingMode={setIsLineDrawingMode}
+            isDeleteMode={isDeleteMode}
+            setIsDeleteMode={setIsDeleteMode}
+            isMobile={isMobile}
+            isTablet={isTablet}
+            isSmallMobile={isSmallMobile}
+          />
+        )}
       </div>
-      {/* Right Panel */}
+      {/* Right Panel - Field Background Selection */}
       {!isMobile && (
-        <RightPanel
-          SIDE_PANEL_WIDTH={SIDE_PANEL_WIDTH}
-          coneColor={coneColor}
-          setConeColor={setConeColor}
-          coneSize={coneSize}
-          setConeSize={setConeSize}
-          labelModeTeam1={labelModeTeam1}
-          setLabelModeTeam1={setLabelModeTeam1}
-          labelModeTeam2={labelModeTeam2}
-          setLabelModeTeam2={setLabelModeTeam2}
-          getNextLabel={getNextLabel}
-          draggingFromPanel={draggingFromPanel}
-          setDraggingFromPanel={setDraggingFromPanel}
-          undoLast={undoLast}
-          editingPlayerId={editingPlayerId}
-          editingText={editingText}
-          setEditingText={setEditingText}
-          handleEditComplete={handleEditComplete}
-          setDragPosition={setDragPosition}
-          playerColorTeam1={playerColorTeam1}
-          setPlayerColorTeam1={setPlayerColorTeam1}
-          playerColorTeam2={playerColorTeam2}
-          setPlayerColorTeam2={setPlayerColorTeam2}
-          playerStyleTeam1={playerStyleTeam1}
-          setPlayerStyleTeam1={setPlayerStyleTeam1}
-          playerStyleTeam2={playerStyleTeam2}
-          setPlayerStyleTeam2={setPlayerStyleTeam2}
-          playerStripeColorTeam1={playerStripeColorTeam1}
-          setPlayerStripeColorTeam1={setPlayerStripeColorTeam1}
-          playerStripeColorTeam2={playerStripeColorTeam2}
-          setPlayerStripeColorTeam2={setPlayerStripeColorTeam2}
-          playerLabelTypeTeam1={playerLabelTypeTeam1}
-          setPlayerLabelTypeTeam1={setPlayerLabelTypeTeam1}
-          playerLabelTypeTeam2={playerLabelTypeTeam2}
-          setPlayerLabelTypeTeam2={setPlayerLabelTypeTeam2}
-          playerCustomTextTeam1={playerCustomTextTeam1}
-          setPlayerCustomTextTeam1={setPlayerCustomTextTeam1}
-          playerCustomTextTeam2={playerCustomTextTeam2}
-          setPlayerCustomTextTeam2={setPlayerCustomTextTeam2}
-          nextPlayerNumberTeam1={nextPlayerNumberTeam1}
-          nextPlayerNumberTeam2={nextPlayerNumberTeam2}
-          deleteSelectedItems={deleteSelectedItems}
-          clearAllItems={clearAllItems}
-          setIsLineDrawingMode={setIsLineDrawingMode}
-          setLineBarConfig={setLineBarConfig}
-          lineBarConfig={lineBarConfig}
-          isDeleteMode={isDeleteMode}
-          setIsDeleteMode={setIsDeleteMode}
-          isMobile={isMobile}
-          isTablet={isTablet}
-        />
+        <div style={{ width: SIDE_PANEL_WIDTH, position: 'relative' }}>
+          <div 
+            onClick={() => {
+              setIsLineDrawingMode(false);
+              setLineBarConfig(prev => ({ ...prev, mode: 'cursor' }));
+            }}
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: 0,
+              width: '100%',
+              transform: 'translateY(-50%)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              padding: 20,
+              backgroundColor: '#ffffff',
+              borderRadius: '8px',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+              margin: '10px',
+              border: '2px solid #000000'
+            }}
+          >
+            <div style={{ fontSize: '14px', color: '#000000', textAlign: 'center', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 16 }}>
+              Field Background
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setBackground('/pitch_full.png');
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 0',
+                  fontSize: '12px',
+                  backgroundColor: background === '/pitch_full.png' ? '#000000' : '#ffffff',
+                  color: background === '/pitch_full.png' ? '#ffffff' : '#000000',
+                  border: '2px solid #000000',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s ease',
+                }}
+                title="Full Field"
+              >
+                Full Field
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setBackground('/pitch_half.png');
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 0',
+                  fontSize: '12px',
+                  backgroundColor: background === '/pitch_half.png' ? '#000000' : '#ffffff',
+                  color: background === '/pitch_half.png' ? '#ffffff' : '#000000',
+                  border: '2px solid #000000',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s ease',
+                }}
+                title="Half Field"
+              >
+                Half Field
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setBackground('/pitch_blank.png');
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 0',
+                  fontSize: '12px',
+                  backgroundColor: background === '/pitch_blank.png' ? '#000000' : '#ffffff',
+                  color: background === '/pitch_blank.png' ? '#ffffff' : '#000000',
+                  border: '2px solid #000000',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s ease',
+                }}
+                title="Blank Field"
+              >
+                Blank Field
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       {/* Editing Overlays */}
       {(editingConeId !== null || editingFootballId !== null || editingLineId !== null) && (
@@ -2044,607 +2148,106 @@ const handleStageMouseUp = (e) => {
         </div>
       )}
 
-      {/* Mobile Floating Toolbar */}
+      {/* Mobile Floating Buttons */}
       {isMobile && (
-        <div
-          className="mobile-toolbar"
-          style={{
-            position: 'fixed',
-            bottom: isSmallMobile ? '20px' : '25px',
-            right: isSmallMobile ? '15px' : '20px',
-            backgroundColor: '#ffffff',
-            borderRadius: '50px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-            border: '2px solid #000000',
-            padding: isSmallMobile ? '10px' : '12px',
-            zIndex: 1000,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: isSmallMobile ? '10px' : '12px',
-            touchAction: 'manipulation',
-            WebkitUserSelect: 'none',
-            userSelect: 'none',
-            // Improved mobile stability
-            transform: 'translateZ(0)',
-            WebkitTransform: 'translateZ(0)',
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-            // Better touch handling
-            WebkitTapHighlightColor: 'transparent',
-            // Prevent text selection
-            WebkitTouchCallout: 'none',
-            // Smooth animations
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            // Better mobile positioning
-            minWidth: isSmallMobile ? '60px' : '70px'
-          }}
-        >
-          {/* Cone Tool */}
+        <>
+          {/* Icons Button - Left Bottom */}
           <div
-            className="mobile-tool-button"
+            className="mobile-floating-button"
             style={{
-              width: isSmallMobile ? '52px' : '60px',
-              height: isSmallMobile ? '52px' : '60px',
+              position: 'fixed',
+              bottom: isSmallMobile ? '20px' : '25px',
+              left: isSmallMobile ? '15px' : '20px',
+              width: isSmallMobile ? '60px' : '70px',
+              height: isSmallMobile ? '60px' : '70px',
+              backgroundColor: '#ffffff',
+              borderRadius: '50%',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              border: '2px solid #000000',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              zIndex: 1000,
               cursor: 'pointer',
-              backgroundColor: '#f8f9fa',
-              borderRadius: '50%',
-              border: '2px solid #000000',
+              fontSize: isSmallMobile ? '12px' : '14px',
+              fontWeight: 'bold',
+              color: '#000000',
               touchAction: 'manipulation',
               WebkitTapHighlightColor: 'transparent',
-              transition: 'all 0.15s ease',
-              // Better touch feedback
-              WebkitUserSelect: 'none',
-              userSelect: 'none',
-              // Prevent glitches
-              transform: 'translateZ(0)',
-              WebkitTransform: 'translateZ(0)'
-            }}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setDraggingFromPanel('cone');
-              // Visual feedback
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(0.95) translateZ(0)';
-              }
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // Reset visual feedback
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(1) translateZ(0)';
-              }
-            }}
-          >
-            <svg width={isSmallMobile ? '26' : '32'} height={isSmallMobile ? '26' : '32'} viewBox="0 0 100 100">
-              <polygon points="50,10 90,90 10,90" fill={coneColor} stroke="black" strokeWidth="4" />
-            </svg>
-          </div>
-
-          {/* Team 1 Player */}
-          <div
-            className="mobile-tool-button"
-            style={{
-              width: isSmallMobile ? '52px' : '60px',
-              height: isSmallMobile ? '52px' : '60px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              backgroundColor: '#f8f9fa',
-              borderRadius: '50%',
-              border: '2px solid #000000',
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent',
-              transition: 'all 0.15s ease',
-              WebkitUserSelect: 'none',
-              userSelect: 'none',
-              transform: 'translateZ(0)',
-              WebkitTransform: 'translateZ(0)'
-            }}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setDraggingFromPanel('team1');
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(0.95) translateZ(0)';
-              }
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(1) translateZ(0)';
-              }
-            }}
-          >
-            <svg width={isSmallMobile ? '26' : '32'} height={isSmallMobile ? '26' : '32'}>
-              <circle cx="15" cy="15" r="14" fill={playerColorTeam1} stroke="black" strokeWidth="1" />
-              <text x="15" y="18" textAnchor="middle" fontSize={isSmallMobile ? '11' : '13'} fill="black" fontWeight="bold">
-                {nextPlayerNumberTeam1}
-              </text>
-            </svg>
-          </div>
-
-          {/* Team 2 Player */}
-          <div
-            className="mobile-tool-button"
-            style={{
-              width: isSmallMobile ? '52px' : '60px',
-              height: isSmallMobile ? '52px' : '60px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              backgroundColor: '#f8f9fa',
-              borderRadius: '50%',
-              border: '2px solid #000000',
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent',
-              transition: 'all 0.15s ease',
-              WebkitUserSelect: 'none',
-              userSelect: 'none',
-              transform: 'translateZ(0)',
-              WebkitTransform: 'translateZ(0)'
-            }}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setDraggingFromPanel('team2');
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(0.95) translateZ(0)';
-              }
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(1) translateZ(0)';
-              }
-            }}
-          >
-            <svg width={isSmallMobile ? '26' : '32'} height={isSmallMobile ? '26' : '32'}>
-              <circle cx="15" cy="15" r="14" fill={playerColorTeam2} stroke="black" strokeWidth="1" />
-              <text x="15" y="18" textAnchor="middle" fontSize={isSmallMobile ? '11' : '13'} fill="black" fontWeight="bold">
-                {nextPlayerNumberTeam2}
-              </text>
-            </svg>
-          </div>
-
-          {/* Football */}
-          <div
-            className="mobile-tool-button"
-            style={{
-              width: isSmallMobile ? '52px' : '60px',
-              height: isSmallMobile ? '52px' : '60px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              backgroundColor: '#f8f9fa',
-              borderRadius: '50%',
-              border: '2px solid #000000',
-              fontSize: isSmallMobile ? '26px' : '32px',
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent',
-              transition: 'all 0.15s ease',
-              WebkitUserSelect: 'none',
-              userSelect: 'none',
-              transform: 'translateZ(0)',
-              WebkitTransform: 'translateZ(0)'
-            }}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setDraggingFromPanel('football');
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(0.95) translateZ(0)';
-              }
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(1) translateZ(0)';
-              }
-            }}
-          >
-            ⚽
-          </div>
-
-          {/* Undo Button */}
-          <div
-            className="mobile-tool-button"
-            style={{
-              width: isSmallMobile ? '52px' : '60px',
-              height: isSmallMobile ? '52px' : '60px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              backgroundColor: '#000000',
-              borderRadius: '50%',
-              border: '2px solid #000000',
-              color: '#ffffff',
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent',
-              transition: 'all 0.15s ease',
-              WebkitUserSelect: 'none',
-              userSelect: 'none',
-              transform: 'translateZ(0)',
-              WebkitTransform: 'translateZ(0)'
-            }}
-            onClick={undoLast}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              undoLast();
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(0.95) translateZ(0)';
-              }
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(1) translateZ(0)';
-              }
-            }}
-          >
-            <FaUndo size={isSmallMobile ? 18 : 22} />
-          </div>
-
-          {/* Clear All Button */}
-          <div
-            className="mobile-tool-button"
-            style={{
-              width: isSmallMobile ? '52px' : '60px',
-              height: isSmallMobile ? '52px' : '60px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              backgroundColor: '#000000',
-              borderRadius: '50%',
-              border: '2px solid #000000',
-              color: '#ffffff',
-              fontSize: isSmallMobile ? '11px' : '13px',
-              textAlign: 'center',
-              padding: '5px',
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent',
-              transition: 'all 0.15s ease',
-              WebkitUserSelect: 'none',
-              userSelect: 'none',
-              transform: 'translateZ(0)',
-              WebkitTransform: 'translateZ(0)'
-            }}
-            onClick={clearAllItems}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              clearAllItems();
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(0.95) translateZ(0)';
-              }
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(1) translateZ(0)';
-              }
-            }}
-          >
-            Clear
-          </div>
-
-          {/* Settings Button */}
-          <div
-            className="mobile-tool-button"
-            style={{
-              width: isSmallMobile ? '52px' : '60px',
-              height: isSmallMobile ? '52px' : '60px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              backgroundColor: showMobileSettings ? '#2563eb' : '#000000',
-              borderRadius: '50%',
-              border: '2px solid #000000',
-              color: '#ffffff',
-              fontSize: isSmallMobile ? '18px' : '22px',
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent',
-              transition: 'all 0.15s ease',
-              WebkitUserSelect: 'none',
-              userSelect: 'none',
-              transform: 'translateZ(0)',
-              WebkitTransform: 'translateZ(0)'
-            }}
-            onClick={() => setShowMobileSettings(!showMobileSettings)}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setShowMobileSettings(!showMobileSettings);
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(0.95) translateZ(0)';
-              }
-            }}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (e.target && e.target.style) {
-                e.target.style.transform = 'scale(1) translateZ(0)';
-              }
-            }}
-          >
-            ⚙️
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Settings Panel */}
-      {isMobile && showMobileSettings && (
-        <div
-          className="mobile-settings-panel"
-          style={{
-            position: 'fixed',
-            bottom: isSmallMobile ? '100px' : '120px',
-            right: isSmallMobile ? '15px' : '20px',
-            backgroundColor: '#ffffff',
-            borderRadius: '12px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-            border: '2px solid #000000',
-            padding: isSmallMobile ? '15px' : '18px',
-            zIndex: 999,
-            minWidth: isSmallMobile ? '200px' : '240px',
-            maxWidth: isSmallMobile ? '260px' : '300px',
-            touchAction: 'manipulation',
-            WebkitUserSelect: 'none',
-            userSelect: 'none',
-            // Improved mobile stability
-            transform: 'translateZ(0)',
-            WebkitTransform: 'translateZ(0)',
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-            // Better touch handling
-            WebkitTapHighlightColor: 'transparent',
-            // Prevent text selection
-            WebkitTouchCallout: 'none',
-            // Smooth animations
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            // Better mobile scrolling
-            maxHeight: '80vh',
-            overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch'
-          }}
-        >
-          <h4 style={{ 
-            margin: '0 0 12px 0', 
-            fontSize: isSmallMobile ? '13px' : '15px', 
-            fontWeight: 'bold',
-            WebkitUserSelect: 'none',
-            userSelect: 'none'
-          }}>Settings</h4>
-          
-          {/* Cone Color */}
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{ 
-              fontSize: isSmallMobile ? '11px' : '13px', 
-              fontWeight: 'bold', 
-              display: 'block', 
-              marginBottom: '6px',
+              transition: 'all 0.2s ease',
               WebkitUserSelect: 'none',
               userSelect: 'none'
-            }}>
-              Cone Color:
-            </label>
-            <select
-              value={coneColor}
-              onChange={(e) => setConeColor(e.target.value)}
-              style={{ 
-                width: '100%', 
-                padding: isSmallMobile ? '12px' : '14px', 
-                fontSize: isSmallMobile ? '13px' : '15px', 
-                borderRadius: '8px', 
-                border: '2px solid #000000',
-                backgroundColor: '#ffffff',
-                touchAction: 'manipulation',
-                WebkitAppearance: 'none',
-                appearance: 'none',
-                backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%204.9A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E")',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 8px center',
-                backgroundSize: '12px auto',
-                paddingRight: '30px',
-                // Better mobile form styling
-                WebkitTapHighlightColor: 'transparent',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <option value="white">White</option>
-              <option value="black">Black</option>
-              <option value="orange">Orange</option>
-              <option value="red">Red</option>
-              <option value="yellow">Yellow</option>
-              <option value="green">Green</option>
-              <option value="blue">Blue</option>
-            </select>
+            }}
+            onClick={() => setShowMobileIcons(!showMobileIcons)}
+          >
+            Icons
           </div>
 
-          {/* Cone Size */}
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{ 
-              fontSize: isSmallMobile ? '11px' : '13px', 
-              fontWeight: 'bold', 
-              display: 'block', 
-              marginBottom: '6px',
+          {/* Lines Button - Middle Bottom */}
+          <div
+            className="mobile-floating-button"
+            style={{
+              position: 'fixed',
+              bottom: isSmallMobile ? '20px' : '25px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: isSmallMobile ? '60px' : '70px',
+              height: isSmallMobile ? '60px' : '70px',
+              backgroundColor: '#ffffff',
+              borderRadius: '50%',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              border: '2px solid #000000',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              cursor: 'pointer',
+              fontSize: isSmallMobile ? '12px' : '14px',
+              fontWeight: 'bold',
+              color: '#000000',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'all 0.2s ease',
               WebkitUserSelect: 'none',
               userSelect: 'none'
-            }}>
-              Cone Size:
-            </label>
-            <select
-              value={coneSize}
-              onChange={(e) => setConeSize(e.target.value)}
-              style={{ 
-                width: '100%', 
-                padding: isSmallMobile ? '12px' : '14px', 
-                fontSize: isSmallMobile ? '13px' : '15px', 
-                borderRadius: '8px', 
-                border: '2px solid #000000',
-                backgroundColor: '#ffffff',
-                touchAction: 'manipulation',
-                WebkitAppearance: 'none',
-                appearance: 'none',
-                backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%204.9A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E")',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 8px center',
-                backgroundSize: '12px auto',
-                paddingRight: '30px',
-                WebkitTapHighlightColor: 'transparent',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <option value="small">Small</option>
-              <option value="medium">Medium</option>
-              <option value="large">Large</option>
-            </select>
+            }}
+            onClick={() => setShowMobileLines(!showMobileLines)}
+          >
+            Lines
           </div>
 
-          {/* Team 1 Color */}
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{ 
-              fontSize: isSmallMobile ? '11px' : '13px', 
-              fontWeight: 'bold', 
-              display: 'block', 
-              marginBottom: '6px',
+          {/* Field Button - Right Bottom */}
+          <div
+            className="mobile-floating-button"
+            style={{
+              position: 'fixed',
+              bottom: isSmallMobile ? '20px' : '25px',
+              right: isSmallMobile ? '15px' : '20px',
+              width: isSmallMobile ? '60px' : '70px',
+              height: isSmallMobile ? '60px' : '70px',
+              backgroundColor: '#ffffff',
+              borderRadius: '50%',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              border: '2px solid #000000',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              cursor: 'pointer',
+              fontSize: isSmallMobile ? '12px' : '14px',
+              fontWeight: 'bold',
+              color: '#000000',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'all 0.2s ease',
               WebkitUserSelect: 'none',
               userSelect: 'none'
-            }}>
-              Team 1 Color:
-            </label>
-            <select
-              value={playerColorTeam1}
-              onChange={(e) => setPlayerColorTeam1(e.target.value)}
-              style={{ 
-                width: '100%', 
-                padding: isSmallMobile ? '12px' : '14px', 
-                fontSize: isSmallMobile ? '13px' : '15px', 
-                borderRadius: '8px', 
-                border: '2px solid #000000',
-                backgroundColor: '#ffffff',
-                touchAction: 'manipulation',
-                WebkitAppearance: 'none',
-                appearance: 'none',
-                backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%204.9A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E")',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 8px center',
-                backgroundSize: '12px auto',
-                paddingRight: '30px',
-                WebkitTapHighlightColor: 'transparent',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <option value="#2563eb">Blue</option>
-              <option value="#dc2626">Red</option>
-              <option value="#16a34a">Green</option>
-              <option value="#ca8a04">Yellow</option>
-              <option value="#9333ea">Purple</option>
-              <option value="#ea580c">Orange</option>
-              <option value="#db2777">Pink</option>
-              <option value="#6b7280">Gray</option>
-            </select>
+            }}
+            onClick={() => setShowMobileField(!showMobileField)}
+          >
+            Field
           </div>
-
-          {/* Team 2 Color */}
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{ 
-              fontSize: isSmallMobile ? '11px' : '13px', 
-              fontWeight: 'bold', 
-              display: 'block', 
-              marginBottom: '6px',
-              WebkitUserSelect: 'none',
-              userSelect: 'none'
-            }}>
-              Team 2 Color:
-            </label>
-            <select
-              value={playerColorTeam2}
-              onChange={(e) => setPlayerColorTeam2(e.target.value)}
-              style={{ 
-                width: '100%', 
-                padding: isSmallMobile ? '12px' : '14px', 
-                fontSize: isSmallMobile ? '13px' : '15px', 
-                borderRadius: '8px', 
-                border: '2px solid #000000',
-                backgroundColor: '#ffffff',
-                touchAction: 'manipulation',
-                WebkitAppearance: 'none',
-                appearance: 'none',
-                backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%204.9A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E")',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 8px center',
-                backgroundSize: '12px auto',
-                paddingRight: '30px',
-                WebkitTapHighlightColor: 'transparent',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <option value="#2563eb">Blue</option>
-              <option value="#dc2626">Red</option>
-              <option value="#16a34a">Green</option>
-              <option value="#ca8a04">Yellow</option>
-              <option value="#9333ea">Purple</option>
-              <option value="#ea580c">Orange</option>
-              <option value="#db2777">Pink</option>
-              <option value="#6b7280">Gray</option>
-            </select>
-          </div>
-
-          {/* Delete Mode Toggle */}
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{ 
-              fontSize: isSmallMobile ? '11px' : '13px', 
-              fontWeight: 'bold', 
-              display: 'block', 
-              marginBottom: '6px',
-              WebkitUserSelect: 'none',
-              userSelect: 'none'
-            }}>
-              Delete Mode:
-            </label>
-            <button
-              onClick={() => setIsDeleteMode(!isDeleteMode)}
-              style={{
-                width: '100%',
-                padding: isSmallMobile ? '12px' : '14px',
-                fontSize: isSmallMobile ? '13px' : '15px',
-                borderRadius: '8px',
-                border: '2px solid #000000',
-                backgroundColor: isDeleteMode ? '#ff4444' : '#ffffff',
-                color: isDeleteMode ? '#ffffff' : '#000000',
-                cursor: 'pointer',
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent',
-                transition: 'all 0.15s ease',
-                fontWeight: 'bold',
-                // Better mobile button styling
-                WebkitUserSelect: 'none',
-                userSelect: 'none',
-                transform: 'translateZ(0)',
-                WebkitTransform: 'translateZ(0)'
-              }}
-            >
-              {isDeleteMode ? 'Active' : 'Inactive'}
-            </button>
-          </div>
-        </div>
+        </>
       )}
 
       {/* HTML drag preview for out-of-canvas drag */}
@@ -2687,6 +2290,433 @@ const handleStageMouseUp = (e) => {
             </text>
           </svg>
           )}
+        </div>
+      )}
+
+      {/* Mobile Icons Menu - Left Side */}
+      {isMobile && showMobileIcons && (
+        <div
+          className="mobile-icons-menu"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            zIndex: 2000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            padding: '20px'
+          }}
+          onClick={() => setShowMobileIcons(false)}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
+              padding: '20px',
+              maxWidth: '300px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              border: '2px solid #000000',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Drawing Tools</h3>
+              <button
+                onClick={() => setShowMobileIcons(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  padding: '0',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            
+            {/* Cone Tool */}
+            <div style={{ marginBottom: '20px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <svg width="30" height="30" viewBox="0 0 100 100">
+                  <polygon points="50,10 90,90 10,90" fill={coneColor} stroke="black" strokeWidth="4" />
+                </svg>
+                <span style={{ fontWeight: 'bold' }}>Cone Tool</span>
+              </div>
+              <button
+                onClick={() => {
+                  setDraggingFromPanel('cone');
+                  setShowMobileIcons(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: '#000000',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
+                }}
+              >
+                Add Cone
+              </button>
+            </div>
+
+            {/* Team 1 Player */}
+            <div style={{ marginBottom: '20px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <div style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: playerColorTeam1, border: '2px solid #000000' }}></div>
+                <span style={{ fontWeight: 'bold' }}>Team 1 Player</span>
+              </div>
+              <button
+                onClick={() => {
+                  setDraggingFromPanel('team1');
+                  setShowMobileIcons(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: '#000000',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
+                }}
+              >
+                Add Player
+              </button>
+            </div>
+
+            {/* Team 2 Player */}
+            <div style={{ marginBottom: '20px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <div style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: playerColorTeam2, border: '2px solid #000000' }}></div>
+                <span style={{ fontWeight: 'bold' }}>Team 2 Player</span>
+              </div>
+              <button
+                onClick={() => {
+                  setDraggingFromPanel('team2');
+                  setShowMobileIcons(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: '#000000',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
+                }}
+              >
+                Add Player
+              </button>
+            </div>
+
+            {/* Football */}
+            <div style={{ marginBottom: '20px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '30px' }}>⚽</span>
+                <span style={{ fontWeight: 'bold' }}>Football</span>
+              </div>
+              <button
+                onClick={() => {
+                  setDraggingFromPanel('football');
+                  setShowMobileIcons(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: '#000000',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
+                }}
+              >
+                Add Football
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Lines Menu - Full Screen */}
+      {isMobile && showMobileLines && (
+        <div
+          className="mobile-lines-menu"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            zIndex: 2000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setShowMobileLines(false)}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
+              padding: '20px',
+              maxWidth: '400px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              border: '2px solid #000000',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Line Drawing</h3>
+              <button
+                onClick={() => setShowMobileLines(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  padding: '0',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Line Drawing Modes */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <button
+                onClick={() => {
+                  setLineBarConfig(prev => ({ 
+                    ...prev, 
+                    mode: 'straight',
+                    color: '#000000',
+                    thickness: 3,
+                    arrowStart: false,
+                    arrowEnd: true
+                  }));
+                  setIsLineDrawingMode(true);
+                  setShowMobileLines(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '15px',
+                  backgroundColor: lineBarConfig.mode === 'straight' ? '#000000' : '#ffffff',
+                  color: lineBarConfig.mode === 'straight' ? '#ffffff' : '#000000',
+                  border: '2px solid #000000',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '16px'
+                }}
+              >
+                Straight Line
+              </button>
+              <button
+                onClick={() => {
+                  setLineBarConfig(prev => ({ 
+                    ...prev, 
+                    mode: 'curve',
+                    color: '#000000',
+                    thickness: 3,
+                    arrowStart: false,
+                    arrowEnd: true
+                  }));
+                  setIsLineDrawingMode(true);
+                  setShowMobileLines(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '15px',
+                  backgroundColor: lineBarConfig.mode === 'curve' ? '#000000' : '#ffffff',
+                  color: lineBarConfig.mode === 'curve' ? '#ffffff' : '#000000',
+                  border: '2px solid #000000',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '16px'
+                }}
+              >
+                Curved Line
+              </button>
+              <button
+                onClick={() => {
+                  setLineBarConfig(prev => ({ 
+                    ...prev, 
+                    mode: 'free',
+                    color: '#000000',
+                    thickness: 3,
+                    arrowStart: false,
+                    arrowEnd: true
+                  }));
+                  setIsLineDrawingMode(true);
+                  setShowMobileLines(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '15px',
+                  backgroundColor: lineBarConfig.mode === 'free' ? '#000000' : '#ffffff',
+                  color: lineBarConfig.mode === 'free' ? '#ffffff' : '#000000',
+                  border: '2px solid #000000',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '16px'
+                }}
+              >
+                Free Draw
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Field Menu - Right Side */}
+      {isMobile && showMobileField && (
+        <div
+          className="mobile-field-menu"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            zIndex: 2000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            padding: '20px'
+          }}
+          onClick={() => setShowMobileField(false)}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
+              padding: '20px',
+              maxWidth: '300px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              border: '2px solid #000000',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Field Background</h3>
+              <button
+                onClick={() => setShowMobileField(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  padding: '0',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Field Options */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <button
+                onClick={() => {
+                  setBackground('/pitch_full.png');
+                  setShowMobileField(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '15px',
+                  backgroundColor: background === '/pitch_full.png' ? '#000000' : '#ffffff',
+                  color: background === '/pitch_full.png' ? '#ffffff' : '#000000',
+                  border: '2px solid #000000',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '16px'
+                }}
+              >
+                Full Field
+              </button>
+              <button
+                onClick={() => {
+                  setBackground('/pitch_half.png');
+                  setShowMobileField(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '15px',
+                  backgroundColor: background === '/pitch_half.png' ? '#000000' : '#ffffff',
+                  color: background === '/pitch_half.png' ? '#ffffff' : '#000000',
+                  border: '2px solid #000000',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '16px'
+                }}
+              >
+                Half Field
+              </button>
+              <button
+                onClick={() => {
+                  setBackground('/pitch_blank.png');
+                  setShowMobileField(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '15px',
+                  backgroundColor: background === '/pitch_blank.png' ? '#000000' : '#ffffff',
+                  color: background === '/pitch_blank.png' ? '#ffffff' : '#000000',
+                  border: '2px solid #000000',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '16px'
+                }}
+              >
+                Blank Field
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

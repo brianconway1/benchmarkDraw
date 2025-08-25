@@ -4,6 +4,8 @@ import { ICON_SIZE } from './DrillDrawer';
 
 const RightPanel = ({
   SIDE_PANEL_WIDTH,
+  background,
+  setBackground,
   coneColor,
   setConeColor,
   coneSize,
