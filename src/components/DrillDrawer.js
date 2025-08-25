@@ -286,18 +286,25 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
       setImageObj(image);
       // Responsive dimensions based on screen size
       const MAX_WIDTH = isMobile ? window.innerWidth - 20 : isTablet ? 800 : 1100;
-      const MAX_HEIGHT = isMobile ? window.innerHeight * 0.6 : isTablet ? 600 : 700;
+      const MAX_HEIGHT = isMobile ? window.innerHeight - 100 : isTablet ? 600 : 700;
       const screenWidth = Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - (isMobile ? 10 : 20), MAX_WIDTH);
-      const screenHeight = Math.min(window.innerHeight - (isMobile ? 200 : 300), MAX_HEIGHT);
-      const widthRatio = screenWidth / image.width;
-      const heightRatio = screenHeight / image.height;
+      const screenHeight = Math.min(window.innerHeight - (isMobile ? 100 : 300), MAX_HEIGHT);
+      
+      // Calculate scale to fit image within Stage dimensions
+      const stageWidth = isMobile ? (isSmallMobile ? Math.min(window.innerWidth - 10, 600) : Math.min(window.innerWidth - 20, 700)) : Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100);
+      const stageHeight = isMobile ? (window.innerWidth > window.innerHeight ? Math.min(window.innerHeight - 100, 500) : window.innerHeight - 150) : Math.min(window.innerHeight, 700);
+      
+      const widthRatio = stageWidth / image.width;
+      const heightRatio = stageHeight / image.height;
       const scaleFactor = Math.min(widthRatio, heightRatio, 1); // never upscale
       setScale(scaleFactor);
-      const offsetX = (screenWidth - image.width * scaleFactor) / 2;
-      const offsetY = (screenHeight - image.height * scaleFactor) / 2;
+      
+      // Center the image in the Stage
+      const offsetX = (stageWidth - image.width * scaleFactor) / 2;
+      const offsetY = isMobile ? (window.innerWidth > window.innerHeight ? 10 : 20) : (stageHeight - image.height * scaleFactor) / 2; // Adjust for orientation
       setOffset({ x: offsetX, y: offsetY });
     }
-  }, [image, SIDE_PANEL_WIDTH, isMobile, isTablet]);
+  }, [image, SIDE_PANEL_WIDTH, isMobile, isTablet, isSmallMobile]);
 
   const pushHistory = () => {
     setHistory([...history, { cones, players, footballs, lines }]);
@@ -1277,9 +1284,9 @@ const handleStageMouseUp = (e) => {
       {/* Right Panel (now positioned on the left) */}
       {!isMobile && (
         <RightPanel
-          SIDE_PANEL_WIDTH={SIDE_PANEL_WIDTH}
-          background={background}
-          setBackground={setBackground}
+        SIDE_PANEL_WIDTH={SIDE_PANEL_WIDTH}
+        background={background}
+        setBackground={setBackground}
           coneColor={coneColor}
           setConeColor={setConeColor}
           coneSize={coneSize}
@@ -1321,14 +1328,14 @@ const handleStageMouseUp = (e) => {
           nextPlayerNumberTeam2={nextPlayerNumberTeam2}
           deleteSelectedItems={deleteSelectedItems}
           clearAllItems={clearAllItems}
-          setIsLineDrawingMode={setIsLineDrawingMode}
-          setLineBarConfig={setLineBarConfig}
+        setIsLineDrawingMode={setIsLineDrawingMode}
+        setLineBarConfig={setLineBarConfig}
           lineBarConfig={lineBarConfig}
           isDeleteMode={isDeleteMode}
           setIsDeleteMode={setIsDeleteMode}
-          isMobile={isMobile}
-          isTablet={isTablet}
-        />
+        isMobile={isMobile}
+        isTablet={isTablet}
+      />
       )}
       {/* Field (Pitch) with equal horizontal spacing */}
       <div style={{ 
@@ -1339,14 +1346,14 @@ const handleStageMouseUp = (e) => {
         justifyContent: 'center', 
         flexDirection: 'column', 
         position: 'relative',
-        minHeight: isMobile ? (isSmallMobile ? '350px' : '450px') : 'auto',
+        minHeight: isMobile ? (isSmallMobile ? '900px' : '1000px') : 'auto',
         // Better mobile layout
         width: isMobile ? '100%' : 'auto',
         padding: isMobile ? '0 5px' : '0'
       }}>
         <Stage
           width={isMobile ? (isSmallMobile ? Math.min(window.innerWidth - 10, 600) : Math.min(window.innerWidth - 20, 700)) : Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100)}
-          height={isMobile ? (isSmallMobile ? Math.min(window.innerHeight * 0.6, 500) : Math.min(window.innerHeight * 0.7, 600)) : Math.min(window.innerHeight, 700)}
+          height={isMobile ? (window.innerWidth > window.innerHeight ? Math.min(window.innerHeight - 100, 500) : window.innerHeight - 150) : Math.min(window.innerHeight, 700)}
           onClick={handleStageClick}
           ref={stageRef}
           onMouseMove={e => {
@@ -1837,20 +1844,20 @@ const handleStageMouseUp = (e) => {
         </Stage>
         {/* Bottom Panel - Line Drawing Controls */}
         {!isMobile && (
-          <BottomPanel
-            stageRef={stageRef}
-            lineBarConfig={lineBarConfig}
-            setLineBarConfig={setLineBarConfig}
-            setDraggingFromPanel={setDraggingFromPanel}
-            ICON_SIZE={ICON_SIZE}
-            isLineDrawingMode={isLineDrawingMode}
-            setIsLineDrawingMode={setIsLineDrawingMode}
-            isDeleteMode={isDeleteMode}
-            setIsDeleteMode={setIsDeleteMode}
-            isMobile={isMobile}
-            isTablet={isTablet}
-            isSmallMobile={isSmallMobile}
-          />
+        <BottomPanel
+          stageRef={stageRef}
+          lineBarConfig={lineBarConfig}
+          setLineBarConfig={setLineBarConfig}
+          setDraggingFromPanel={setDraggingFromPanel}
+          ICON_SIZE={ICON_SIZE}
+          isLineDrawingMode={isLineDrawingMode}
+          setIsLineDrawingMode={setIsLineDrawingMode}
+          isDeleteMode={isDeleteMode}
+          setIsDeleteMode={setIsDeleteMode}
+          isMobile={isMobile}
+          isTablet={isTablet}
+          isSmallMobile={isSmallMobile}
+        />
         )}
       </div>
       {/* Right Panel - Field Background Selection */}
@@ -2152,19 +2159,19 @@ const handleStageMouseUp = (e) => {
       {isMobile && (
         <>
           {/* Icons Button - Left Bottom */}
-          <div
+        <div
             className="mobile-floating-button"
-            style={{
-              position: 'fixed',
-              bottom: isSmallMobile ? '20px' : '25px',
+          style={{
+            position: 'fixed',
+            bottom: isSmallMobile ? '20px' : '25px',
               left: isSmallMobile ? '15px' : '20px',
               width: isSmallMobile ? '60px' : '70px',
               height: isSmallMobile ? '60px' : '70px',
-              backgroundColor: '#ffffff',
+            backgroundColor: '#ffffff',
               borderRadius: '50%',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-              border: '2px solid #000000',
-              display: 'flex',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            border: '2px solid #000000',
+            display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 1000,
@@ -2172,8 +2179,8 @@ const handleStageMouseUp = (e) => {
               fontSize: isSmallMobile ? '12px' : '14px',
               fontWeight: 'bold',
               color: '#000000',
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
               transition: 'all 0.2s ease',
               WebkitUserSelect: 'none',
               userSelect: 'none'
@@ -2252,8 +2259,8 @@ const handleStageMouseUp = (e) => {
 
       {/* HTML drag preview for out-of-canvas drag */}
       {showHtmlPreview && draggedItem && htmlDragPos && (
-        <div
-          style={{
+          <div
+            style={{
             position: 'fixed',
             pointerEvents: 'none',
             left: htmlDragPos.x - ICON_SIZE / 2,
@@ -2262,9 +2269,9 @@ const handleStageMouseUp = (e) => {
             opacity: 0.85,
             width: ICON_SIZE,
             height: ICON_SIZE,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
           }}
         >
           {draggedItem.type === 'cone' ? (
@@ -2287,17 +2294,17 @@ const handleStageMouseUp = (e) => {
               fill="white"
             >
                 {draggedItem.label}
-            </text>
-          </svg>
+              </text>
+            </svg>
           )}
-        </div>
+          </div>
       )}
 
       {/* Mobile Icons Menu - Left Side */}
       {isMobile && showMobileIcons && (
-        <div
+          <div
           className="mobile-icons-menu"
-          style={{
+            style={{
             position: 'fixed',
             top: 0,
             left: 0,
@@ -2305,8 +2312,8 @@ const handleStageMouseUp = (e) => {
             height: '100%',
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
             zIndex: 2000,
-            display: 'flex',
-            alignItems: 'center',
+              display: 'flex',
+              alignItems: 'center',
             justifyContent: 'flex-start',
             padding: '20px'
           }}
@@ -2345,8 +2352,8 @@ const handleStageMouseUp = (e) => {
               >
                 ✕
               </button>
-            </div>
-            
+          </div>
+
             {/* Cone Tool */}
             <div style={{ marginBottom: '20px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
@@ -2360,11 +2367,11 @@ const handleStageMouseUp = (e) => {
                   setDraggingFromPanel('cone');
                   setShowMobileIcons(false);
                 }}
-                style={{
+            style={{
                   width: '100%',
                   padding: '12px',
-                  backgroundColor: '#000000',
-                  color: '#ffffff',
+              backgroundColor: '#000000',
+              color: '#ffffff',
                   border: 'none',
                   borderRadius: '6px',
                   cursor: 'pointer',
@@ -2401,7 +2408,7 @@ const handleStageMouseUp = (e) => {
               >
                 Add Player
               </button>
-            </div>
+          </div>
 
             {/* Team 2 Player */}
             <div style={{ marginBottom: '20px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
@@ -2414,11 +2421,11 @@ const handleStageMouseUp = (e) => {
                   setDraggingFromPanel('team2');
                   setShowMobileIcons(false);
                 }}
-                style={{
+            style={{
                   width: '100%',
                   padding: '12px',
-                  backgroundColor: '#000000',
-                  color: '#ffffff',
+              backgroundColor: '#000000',
+              color: '#ffffff',
                   border: 'none',
                   borderRadius: '6px',
                   cursor: 'pointer',
@@ -2428,7 +2435,7 @@ const handleStageMouseUp = (e) => {
               >
                 Add Player
               </button>
-            </div>
+          </div>
 
             {/* Football */}
             <div style={{ marginBottom: '20px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
@@ -2441,11 +2448,11 @@ const handleStageMouseUp = (e) => {
                   setDraggingFromPanel('football');
                   setShowMobileIcons(false);
                 }}
-                style={{
+            style={{
                   width: '100%',
                   padding: '12px',
                   backgroundColor: '#000000',
-                  color: '#ffffff',
+              color: '#ffffff',
                   border: 'none',
                   borderRadius: '6px',
                   cursor: 'pointer',
@@ -2480,15 +2487,15 @@ const handleStageMouseUp = (e) => {
           onClick={() => setShowMobileLines(false)}
         >
           <div
-            style={{
+              style={{ 
               backgroundColor: '#ffffff',
               borderRadius: '12px',
               padding: '20px',
               maxWidth: '400px',
-              width: '100%',
+                width: '100%', 
               maxHeight: '90vh',
               overflowY: 'auto',
-              border: '2px solid #000000',
+                border: '2px solid #000000',
               boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
             }}
             onClick={(e) => e.stopPropagation()}
@@ -2497,7 +2504,7 @@ const handleStageMouseUp = (e) => {
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Line Drawing</h3>
               <button
                 onClick={() => setShowMobileLines(false)}
-                style={{
+              style={{ 
                   background: 'none',
                   border: 'none',
                   fontSize: '24px',
@@ -2512,7 +2519,7 @@ const handleStageMouseUp = (e) => {
               >
                 ✕
               </button>
-            </div>
+          </div>
 
             {/* Line Drawing Modes */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -2529,12 +2536,12 @@ const handleStageMouseUp = (e) => {
                   setIsLineDrawingMode(true);
                   setShowMobileLines(false);
                 }}
-                style={{
-                  width: '100%',
+              style={{ 
+                width: '100%', 
                   padding: '15px',
                   backgroundColor: lineBarConfig.mode === 'straight' ? '#000000' : '#ffffff',
                   color: lineBarConfig.mode === 'straight' ? '#ffffff' : '#000000',
-                  border: '2px solid #000000',
+                border: '2px solid #000000',
                   borderRadius: '8px',
                   cursor: 'pointer',
                   fontWeight: 'bold',
@@ -2556,12 +2563,12 @@ const handleStageMouseUp = (e) => {
                   setIsLineDrawingMode(true);
                   setShowMobileLines(false);
                 }}
-                style={{
-                  width: '100%',
+              style={{ 
+                width: '100%', 
                   padding: '15px',
                   backgroundColor: lineBarConfig.mode === 'curve' ? '#000000' : '#ffffff',
                   color: lineBarConfig.mode === 'curve' ? '#ffffff' : '#000000',
-                  border: '2px solid #000000',
+                border: '2px solid #000000',
                   borderRadius: '8px',
                   cursor: 'pointer',
                   fontWeight: 'bold',
@@ -2570,7 +2577,7 @@ const handleStageMouseUp = (e) => {
               >
                 Curved Line
               </button>
-              <button
+            <button
                 onClick={() => {
                   setLineBarConfig(prev => ({ 
                     ...prev, 
@@ -2583,20 +2590,20 @@ const handleStageMouseUp = (e) => {
                   setIsLineDrawingMode(true);
                   setShowMobileLines(false);
                 }}
-                style={{
-                  width: '100%',
+              style={{
+                width: '100%',
                   padding: '15px',
                   backgroundColor: lineBarConfig.mode === 'free' ? '#000000' : '#ffffff',
                   color: lineBarConfig.mode === 'free' ? '#ffffff' : '#000000',
-                  border: '2px solid #000000',
+                border: '2px solid #000000',
                   borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
+                cursor: 'pointer',
+                fontWeight: 'bold',
                   fontSize: '16px'
                 }}
               >
                 Free Draw
-              </button>
+            </button>
             </div>
           </div>
         </div>
