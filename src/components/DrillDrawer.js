@@ -632,8 +632,17 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
     pushHistory();
     const label = getNextLabel(team);
     incrementLabel(team);
-    const canvasX = (pos.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale;
-    const canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
+    // Calculate position based on device type
+    let canvasX, canvasY;
+    if (isMobile) {
+      // On mobile, the panel is above the field, so no x-offset needed
+      canvasX = (pos.x - offset.x - ICON_SIZE / 2) / scale;
+      canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
+    } else {
+      // On desktop, the right panel is on the left side, so no SIDE_PANEL_WIDTH subtraction needed
+      canvasX = (pos.x - offset.x - ICON_SIZE / 2) / scale;
+      canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
+    }
     const color = team === 'team1' ? playerColorTeam1 : playerColorTeam2;
     const style = team === 'team1' ? playerStyleTeam1 : playerStyleTeam2;
     const stripeColor = team === 'team1' ? playerStripeColorTeam1 : playerStripeColorTeam2;
@@ -1293,8 +1302,17 @@ const handleStageMouseUp = (e) => {
     // Reset line drawing mode when dropping players
     setIsLineDrawingMode(false);
   } else if (draggingFromPanel === 'cone') {
-    const canvasX = (pos.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale;
-    const canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
+    // Calculate position based on device type
+    let canvasX, canvasY;
+    if (isMobile) {
+      // On mobile, the panel is above the field, so no x-offset needed
+      canvasX = (pos.x - offset.x - ICON_SIZE / 2) / scale;
+      canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
+    } else {
+      // On desktop, the right panel is on the left side, so no SIDE_PANEL_WIDTH subtraction needed
+      canvasX = (pos.x - offset.x - ICON_SIZE / 2) / scale;
+      canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
+    }
     pushHistory();
     setCones([...cones, {
       x: canvasX,
@@ -1305,8 +1323,17 @@ const handleStageMouseUp = (e) => {
     // Reset line drawing mode when dropping cones
     setIsLineDrawingMode(false);
   } else if (draggingFromPanel === 'football') {
-    const canvasX = (pos.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale;
-    const canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
+    // Calculate position based on device type
+    let canvasX, canvasY;
+    if (isMobile) {
+      // On mobile, the panel is above the field, so no x-offset needed
+      canvasX = (pos.x - offset.x - ICON_SIZE / 2) / scale;
+      canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
+    } else {
+      // On desktop, the right panel is on the left side, so no SIDE_PANEL_WIDTH subtraction needed
+      canvasX = (pos.x - offset.x - ICON_SIZE / 2) / scale;
+      canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
+    }
     pushHistory();
     setFootballs(fbs => [...fbs, { id: getId(), x: canvasX, y: canvasY }]);
     // Reset line drawing mode when dropping footballs
