@@ -274,6 +274,27 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
     }
   }, [isMobile]);
 
+  // Monitor scrolling behavior
+  useEffect(() => {
+    if (isMobile) {
+      const container = document.querySelector('.drill-drawer-container');
+      if (container) {
+        const handleScroll = (e) => {
+          console.log('Scroll event:', {
+            scrollTop: container.scrollTop,
+            scrollHeight: container.scrollHeight,
+            clientHeight: container.clientHeight,
+            canScrollUp: container.scrollTop > 0,
+            canScrollDown: container.scrollTop < (container.scrollHeight - container.clientHeight)
+          });
+        };
+        
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+      }
+    }
+  }, [isMobile]);
+
   const coneSizeToRadius = {
     small: 10,
     medium: 15,
@@ -313,7 +334,7 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
       
       // Calculate scale to fit image within Stage dimensions
       const stageWidth = isMobile ? (isSmallMobile ? Math.min(window.innerWidth - 10, 600) : Math.min(window.innerWidth - 20, 700)) : Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100);
-      const stageHeight = isMobile ? (window.innerWidth > window.innerHeight ? Math.min(window.innerHeight - 60, 350) : window.innerHeight - 150) : Math.min(window.innerHeight, 700);
+      const stageHeight = isMobile ? (window.innerWidth > window.innerHeight ? Math.min(window.innerHeight - 40, 500) : window.innerHeight - 150) : Math.min(window.innerHeight, 700);
       
       const widthRatio = stageWidth / image.width;
       const heightRatio = stageHeight / image.height;
@@ -1255,12 +1276,21 @@ const handleStageMouseUp = (e) => {
     
     // Automatically deactivate drawing mode when mouse is released
     setIsLineDrawingMode(false);
+    
+    // Reset line bar config to cursor mode to ensure clean state
+    setLineBarConfig(prev => ({
+      ...prev,
+      mode: 'cursor'
+    }));
+    
     return;
   }
 
   // Handle drag and drop for other elements
   if (draggingFromPanel === 'team1' || draggingFromPanel === 'team2') {
     handleDropPlayerOnStage(pos, draggingFromPanel);
+    // Reset line drawing mode when dropping players
+    setIsLineDrawingMode(false);
   } else if (draggingFromPanel === 'cone') {
     const canvasX = (pos.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale;
     const canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
@@ -1271,11 +1301,15 @@ const handleStageMouseUp = (e) => {
       color: coneColor,
       size: coneSize
     }]);
+    // Reset line drawing mode when dropping cones
+    setIsLineDrawingMode(false);
   } else if (draggingFromPanel === 'football') {
     const canvasX = (pos.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale;
     const canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
     pushHistory();
     setFootballs(fbs => [...fbs, { id: getId(), x: canvasX, y: canvasY }]);
+    // Reset line drawing mode when dropping footballs
+    setIsLineDrawingMode(false);
   }
 
   // Reset all drag/drop state
@@ -1294,15 +1328,31 @@ const handleStageMouseUp = (e) => {
   }, [draggingFromPanel]);
 
   return (
-    <div style={{ 
+    <div 
+      className="drill-drawer-container"
+      style={{ 
       display: 'flex', 
-      height: isMobile ? (isSmallMobile ? 'calc(100vh - 50px)' : 'calc(100vh - 60px)') : '100vh', 
-      overflow: 'auto', 
-      WebkitOverflowScrolling: 'touch',
+        height: isMobile ? (window.innerWidth > window.innerHeight ? '100vh' : (isSmallMobile ? 'calc(100vh - 50px)' : 'calc(100vh - 60px)')) : '100vh', 
+        overflow: 'auto', 
+        WebkitOverflowScrolling: 'touch',
+        scrollBehavior: 'smooth',
       alignItems: 'stretch',
       flexDirection: isMobile ? 'column' : 'row',
       position: 'relative'
-    }}>
+      }}
+      onTouchStart={(e) => {
+        // Allow scrolling when touching the container
+        if (!isDrawing && !isLineDrawingMode && !isDeleteMode) {
+          // Don't prevent default - allow natural scrolling
+        }
+      }}
+      onTouchMove={(e) => {
+        // Allow scrolling when touching the container
+        if (!isDrawing && !isLineDrawingMode && !isDeleteMode) {
+          // Don't prevent default - allow natural scrolling
+        }
+      }}
+    >
       {/* Right Panel (now positioned on the left) */}
       {!isMobile && (
         <RightPanel
@@ -1368,19 +1418,18 @@ const handleStageMouseUp = (e) => {
         justifyContent: 'center', 
         flexDirection: 'column', 
         position: 'relative',
-        minHeight: isMobile ? (window.innerWidth > window.innerHeight ? '300px' : (isSmallMobile ? '900px' : '1000px')) : 'auto',
+        minHeight: isMobile ? (window.innerWidth > window.innerHeight ? '600px' : (isSmallMobile ? '900px' : '1000px')) : 'auto',
         // Better mobile layout
         width: isMobile ? '100%' : 'auto',
-        padding: isMobile ? '0 5px' : '0',
-        // Enable scrolling
-        overflow: 'auto',
-        WebkitOverflowScrolling: 'touch'
+        padding: isMobile ? '0 5px' : '0'
+        // Removed overflow to prevent scroll conflicts
       }}>
         <Stage
           width={isMobile ? (isSmallMobile ? Math.min(window.innerWidth - 10, 600) : Math.min(window.innerWidth - 20, 700)) : Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100)}
-          height={isMobile ? (window.innerWidth > window.innerHeight ? Math.min(window.innerHeight - 60, 350) : window.innerHeight - 150) : Math.min(window.innerHeight, 700)}
+          height={isMobile ? (window.innerWidth > window.innerHeight ? Math.min(window.innerHeight - 40, 500) : window.innerHeight - 150) : Math.min(window.innerHeight, 700)}
           onClick={handleStageClick}
           ref={stageRef}
+          className={`${isDeleteMode ? 'scissors-cursor' : ''} ${(isDrawing || isLineDrawingMode || isDeleteMode) ? 'drawing-mode' : ''}`}
           onMouseMove={e => {
             if (draggingFromPanel) {
               setDragPosition(e.target.getStage().getPointerPosition());
@@ -1391,7 +1440,8 @@ const handleStageMouseUp = (e) => {
           onMouseUp={handleStageMouseUp}
           onMouseDown={handleStageMouseDown}
           onTouchMove={e => {
-            // Handle touch events for mobile
+            // Only prevent default if we're actually drawing or dragging
+            if (isDrawing || draggingFromPanel || isLineDrawingMode) {
             e.evt.preventDefault();
             if (draggingFromPanel) {
               const stage = e.target.getStage();
@@ -1399,21 +1449,28 @@ const handleStageMouseUp = (e) => {
               setDragPosition(point);
             }
             handleStageMouseMove(e);
+            }
+            // If not drawing, allow natural scrolling
           }}
           onTouchEnd={e => {
-            e.evt.preventDefault();
-            handleStageMouseUp(e);
+            // Always handle touch end for line drawing completion
+            if (isDrawing || drawingLine || draggingFromPanel || isLineDrawingMode) {
+              e.evt.preventDefault();
+              handleStageMouseUp(e);
+            }
           }}
           onTouchStart={e => {
+            // Only prevent default if we're actually drawing or dragging
+            if (isDrawing || draggingFromPanel || isLineDrawingMode) {
             e.evt.preventDefault();
             handleStageMouseDown(e);
+            }
           }}
-          className={isDeleteMode ? 'scissors-cursor' : ''}
           style={{ 
             cursor: isDeleteMode ? 'crosshair' : (isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? 'crosshair' : 'default'),
             border: isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? '2px solid #2196F3' : 'none',
             borderRadius: isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? '4px' : '0',
-            touchAction: 'none',
+            touchAction: (isDrawing || isLineDrawingMode || isDeleteMode) ? 'none' : 'pan-y',
             WebkitUserSelect: 'none',
             userSelect: 'none',
             // Mobile performance improvements
@@ -2183,20 +2240,101 @@ const handleStageMouseUp = (e) => {
       {/* Mobile Floating Buttons */}
       {isMobile && (
         <>
-          {/* Icons Button - Left Bottom */}
+          {/* Top Floating Buttons - Screenshot, Undo, Clear */}
+          {/* Screenshot Button - Top Left */}
         <div
             className="mobile-floating-button"
           style={{
             position: 'fixed',
-            bottom: isSmallMobile ? '20px' : '25px',
+              top: isSmallMobile ? '80px' : '90px',
               left: isSmallMobile ? '15px' : '20px',
-              width: isSmallMobile ? '60px' : '70px',
-              height: isSmallMobile ? '60px' : '70px',
+              width: isSmallMobile ? '50px' : '60px',
+              height: isSmallMobile ? '50px' : '60px',
             backgroundColor: '#ffffff',
               borderRadius: '50%',
             boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
             border: '2px solid #000000',
-            display: 'flex',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              cursor: 'pointer',
+              fontSize: isSmallMobile ? '18px' : '20px',
+              fontWeight: 'bold',
+              color: '#000000',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'all 0.2s ease',
+              WebkitUserSelect: 'none',
+              userSelect: 'none'
+            }}
+            onClick={() => {
+              // Screenshot functionality
+              const stage = stageRef.current;
+              if (stage) {
+                const dataURL = stage.toDataURL();
+                const link = document.createElement('a');
+                link.download = 'drill-drawer-screenshot.png';
+                link.href = dataURL;
+                link.click();
+              }
+            }}
+            title="Take Screenshot"
+          >
+            📸
+          </div>
+
+          {/* Undo Button - Top Center */}
+          <div
+            className="mobile-floating-button"
+            style={{
+              position: 'fixed',
+              top: isSmallMobile ? '80px' : '90px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: isSmallMobile ? '50px' : '60px',
+              height: isSmallMobile ? '50px' : '60px',
+              backgroundColor: '#ffffff',
+              borderRadius: '50%',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              border: '2px solid #000000',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              cursor: 'pointer',
+              fontSize: isSmallMobile ? '18px' : '20px',
+              fontWeight: 'bold',
+              color: '#000000',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'all 0.2s ease',
+              WebkitUserSelect: 'none',
+              userSelect: 'none'
+            }}
+            onClick={() => {
+              // Undo functionality
+              undoLast();
+            }}
+            title="Undo Last Action"
+          >
+            ↩️
+          </div>
+
+          {/* Clear Button - Top Right */}
+          <div
+            className="mobile-floating-button"
+            style={{
+              position: 'fixed',
+              top: isSmallMobile ? '80px' : '90px',
+              right: isSmallMobile ? '15px' : '20px',
+              width: isSmallMobile ? '50px' : '60px',
+              height: isSmallMobile ? '50px' : '60px',
+              backgroundColor: '#ffffff',
+              borderRadius: '50%',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              border: '2px solid #000000',
+              display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 1000,
@@ -2204,8 +2342,46 @@ const handleStageMouseUp = (e) => {
               fontSize: isSmallMobile ? '12px' : '14px',
               fontWeight: 'bold',
               color: '#000000',
-            touchAction: 'manipulation',
-            WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+              transition: 'all 0.2s ease',
+              WebkitUserSelect: 'none',
+              userSelect: 'none'
+            }}
+            onClick={() => {
+              // Clear all functionality
+              if (window.confirm('Are you sure you want to clear everything?')) {
+                clearAllItems();
+              }
+            }}
+            title="Clear All Items"
+          >
+            Clear
+          </div>
+
+          {/* Icons Button - Left Bottom */}
+          <div
+            className="mobile-floating-button"
+            style={{
+              position: 'fixed',
+              bottom: isSmallMobile ? '20px' : '25px',
+              left: isSmallMobile ? '15px' : '20px',
+              width: isSmallMobile ? '60px' : '70px',
+              height: isSmallMobile ? '60px' : '70px',
+              backgroundColor: '#ffffff',
+              borderRadius: '50%',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              border: '2px solid #000000',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              cursor: 'pointer',
+              fontSize: isSmallMobile ? '12px' : '14px',
+              fontWeight: 'bold',
+              color: '#000000',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
               transition: 'all 0.2s ease',
               WebkitUserSelect: 'none',
               userSelect: 'none'
@@ -2322,14 +2498,14 @@ const handleStageMouseUp = (e) => {
               </text>
             </svg>
           )}
-          </div>
+        </div>
       )}
 
       {/* Mobile Icons Menu - Left Side */}
       {isMobile && showMobileIcons && (
-          <div
+        <div
           className="mobile-icons-menu"
-            style={{
+          style={{
             position: 'fixed',
             top: 0,
             left: 0,
@@ -2346,19 +2522,19 @@ const handleStageMouseUp = (e) => {
         >
           <div
             style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '12px',
-              padding: '20px',
+            backgroundColor: '#ffffff',
+            borderRadius: '12px',
+              padding: '16px',
               maxWidth: '300px',
               width: '100%',
-              maxHeight: '90vh',
-              overflowY: 'auto',
+              maxHeight: '80vh',
+            overflowY: 'auto',
               border: '2px solid #000000',
               boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Drawing Tools</h3>
               <button
                 onClick={() => setShowMobileIcons(false)}
@@ -2380,7 +2556,7 @@ const handleStageMouseUp = (e) => {
           </div>
 
             {/* Cone Tool */}
-            <div style={{ marginBottom: '20px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
+            <div style={{ marginBottom: '16px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                 <svg width="30" height="30" viewBox="0 0 100 100">
                   <polygon points="50,10 90,90 10,90" fill={coneColor} stroke="black" strokeWidth="4" />
@@ -2390,10 +2566,11 @@ const handleStageMouseUp = (e) => {
               <button
                 onClick={() => {
                   setDraggingFromPanel('cone');
+                  setIsLineDrawingMode(false);
                   setShowMobileIcons(false);
                 }}
-            style={{
-                  width: '100%',
+              style={{ 
+                width: '100%', 
                   padding: '12px',
               backgroundColor: '#000000',
               color: '#ffffff',
@@ -2406,10 +2583,10 @@ const handleStageMouseUp = (e) => {
               >
                 Add Cone
               </button>
-            </div>
+          </div>
 
             {/* Team 1 Player */}
-            <div style={{ marginBottom: '20px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
+            <div style={{ marginBottom: '16px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                 <div style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: playerColorTeam1, border: '2px solid #000000' }}></div>
                 <span style={{ fontWeight: 'bold' }}>Team 1 Player</span>
@@ -2417,10 +2594,11 @@ const handleStageMouseUp = (e) => {
               <button
                 onClick={() => {
                   setDraggingFromPanel('team1');
+                  setIsLineDrawingMode(false);
                   setShowMobileIcons(false);
                 }}
-                style={{
-                  width: '100%',
+              style={{ 
+                width: '100%', 
                   padding: '12px',
                   backgroundColor: '#000000',
                   color: '#ffffff',
@@ -2436,7 +2614,7 @@ const handleStageMouseUp = (e) => {
           </div>
 
             {/* Team 2 Player */}
-            <div style={{ marginBottom: '20px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
+            <div style={{ marginBottom: '16px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                 <div style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: playerColorTeam2, border: '2px solid #000000' }}></div>
                 <span style={{ fontWeight: 'bold' }}>Team 2 Player</span>
@@ -2444,10 +2622,11 @@ const handleStageMouseUp = (e) => {
               <button
                 onClick={() => {
                   setDraggingFromPanel('team2');
+                  setIsLineDrawingMode(false);
                   setShowMobileIcons(false);
                 }}
-            style={{
-                  width: '100%',
+              style={{ 
+                width: '100%', 
                   padding: '12px',
               backgroundColor: '#000000',
               color: '#ffffff',
@@ -2463,7 +2642,7 @@ const handleStageMouseUp = (e) => {
           </div>
 
             {/* Football */}
-            <div style={{ marginBottom: '20px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
+            <div style={{ marginBottom: '16px', padding: '15px', border: '2px solid #e5e7eb', borderRadius: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                 <span style={{ fontSize: '30px' }}>⚽</span>
                 <span style={{ fontWeight: 'bold' }}>Football</span>
@@ -2471,6 +2650,7 @@ const handleStageMouseUp = (e) => {
               <button
                 onClick={() => {
                   setDraggingFromPanel('football');
+                  setIsLineDrawingMode(false);
                   setShowMobileIcons(false);
                 }}
             style={{
@@ -2481,7 +2661,7 @@ const handleStageMouseUp = (e) => {
                   border: 'none',
                   borderRadius: '6px',
                   cursor: 'pointer',
-                  fontWeight: 'bold',
+              fontWeight: 'bold', 
                   fontSize: '14px'
                 }}
               >
@@ -2496,11 +2676,11 @@ const handleStageMouseUp = (e) => {
       {isMobile && showMobileLines && (
         <div
           className="mobile-lines-menu"
-          style={{
+              style={{ 
             position: 'fixed',
             top: 0,
             left: 0,
-            width: '100%',
+                width: '100%', 
             height: '100%',
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
             zIndex: 2000,
@@ -2513,7 +2693,7 @@ const handleStageMouseUp = (e) => {
         >
           <div
               style={{ 
-              backgroundColor: '#ffffff',
+                backgroundColor: '#ffffff',
               borderRadius: '12px',
               padding: '20px',
               maxWidth: '400px',
@@ -2569,13 +2749,13 @@ const handleStageMouseUp = (e) => {
                 border: '2px solid #000000',
                   borderRadius: '8px',
                   cursor: 'pointer',
-                  fontWeight: 'bold',
+              fontWeight: 'bold', 
                   fontSize: '16px'
                 }}
               >
                 Straight Line
               </button>
-              <button
+            <button
                 onClick={() => {
                   setLineBarConfig(prev => ({ 
                     ...prev, 
@@ -2588,13 +2768,13 @@ const handleStageMouseUp = (e) => {
                   setIsLineDrawingMode(true);
                   setShowMobileLines(false);
                 }}
-              style={{ 
-                width: '100%', 
+              style={{
+                width: '100%',
                   padding: '15px',
                   backgroundColor: lineBarConfig.mode === 'curve' ? '#000000' : '#ffffff',
                   color: lineBarConfig.mode === 'curve' ? '#ffffff' : '#000000',
                 border: '2px solid #000000',
-                  borderRadius: '8px',
+                borderRadius: '8px',
                   cursor: 'pointer',
                   fontWeight: 'bold',
                   fontSize: '16px'

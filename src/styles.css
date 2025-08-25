@@ -81,6 +81,34 @@ body {
     user-select: none;
   }
   
+  /* Drill drawer container scrolling */
+  .drill-drawer-container {
+    /* Ensure proper scrolling */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    /* Prevent scroll conflicts */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.3) transparent;
+  }
+
+  /* Webkit scrollbar styling */
+  .drill-drawer-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .drill-drawer-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .drill-drawer-container::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.3);
+    border-radius: 3px;
+  }
+
+  .drill-drawer-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.5);
+  }
+  
   /* Mobile floating toolbar improvements */
   .mobile-toolbar {
     /* Ensure it stays above other content */
@@ -423,4 +451,26 @@ input, textarea {
   .mobile-toolbar + div {
     margin-bottom: 5px;
   }
+}
+
+/* Drill drawer container scrolling */
+.drill-drawer-container {
+  /* Ensure proper scrolling */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* Prevent scroll conflicts */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.3) transparent;
+  /* Allow touch scrolling */
+  touch-action: pan-y;
+}
+
+/* Ensure Konva stage allows scrolling when not drawing */
+.konvajs-content {
+  touch-action: pan-y;
+}
+
+/* When in drawing mode, restrict touch actions */
+.konvajs-content.drawing-mode {
+  touch-action: none;
 }
