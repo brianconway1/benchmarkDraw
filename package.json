@@ -18,6 +18,7 @@
     "react-scripts": "^5.0.1",
     "react-select": "^5.10.2",
     "react-text": "^3.2.5",
+    "react-zoom-pan-pinch": "^3.7.0",
     "use-image": "^1.0.1"
   },
   "scripts": {

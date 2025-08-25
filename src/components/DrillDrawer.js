@@ -7,6 +7,7 @@ import { RegularPolygon } from 'react-konva';
 import LeftPanel from './LeftPanel';
 import RightPanel from './RightPanel';
 import BottomPanel from './BottomPanel';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 // Responsive constants
 const getResponsiveConstants = () => {
@@ -1424,506 +1425,520 @@ const handleStageMouseUp = (e) => {
         padding: isMobile ? '0 5px' : '0'
         // Removed overflow to prevent scroll conflicts
       }}>
-        <Stage
-          width={isMobile ? (isSmallMobile ? Math.min(window.innerWidth - 10, 600) : Math.min(window.innerWidth - 20, 700)) : Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100)}
-          height={isMobile ? (window.innerWidth > window.innerHeight ? Math.min(window.innerHeight - 40, 500) : window.innerHeight - 150) : Math.min(window.innerHeight, 700)}
-          onClick={handleStageClick}
-          ref={stageRef}
-          className={`${isDeleteMode ? 'scissors-cursor' : ''} ${(isDrawing || isLineDrawingMode || isDeleteMode) ? 'drawing-mode' : ''}`}
-          onMouseMove={e => {
-            if (draggingFromPanel) {
-              setDragPosition(e.target.getStage().getPointerPosition());
-            }
-            // Always handle mouse move for line drawing
-            handleStageMouseMove(e);
-          }}
-          onMouseUp={handleStageMouseUp}
-          onMouseDown={handleStageMouseDown}
-          onTouchMove={e => {
-            // Only prevent default if we're actually drawing or dragging
-            if (isDrawing || draggingFromPanel || isLineDrawingMode) {
-            e.evt.preventDefault();
-            if (draggingFromPanel) {
-              const stage = e.target.getStage();
-              const point = stage.getPointerPosition();
-              setDragPosition(point);
-            }
-            handleStageMouseMove(e);
-            }
-            // If not drawing, allow natural scrolling
-          }}
-          onTouchEnd={e => {
-            // Always handle touch end for line drawing completion
-            if (isDrawing || drawingLine || draggingFromPanel || isLineDrawingMode) {
-              e.evt.preventDefault();
-              handleStageMouseUp(e);
-            }
-          }}
-          onTouchStart={e => {
-            // Only prevent default if we're actually drawing or dragging
-            if (isDrawing || draggingFromPanel || isLineDrawingMode) {
-            e.evt.preventDefault();
-            handleStageMouseDown(e);
-            }
-          }}
-          style={{ 
-            cursor: isDeleteMode ? 'crosshair' : (isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? 'crosshair' : 'default'),
-            border: isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? '2px solid #2196F3' : 'none',
-            borderRadius: isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? '4px' : '0',
-            touchAction: (isDrawing || isLineDrawingMode || isDeleteMode) ? 'none' : 'pan-y',
-            WebkitUserSelect: 'none',
-            userSelect: 'none',
-            // Mobile performance improvements
-            transform: 'translateZ(0)',
-            WebkitTransform: 'translateZ(0)',
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-            // Better mobile rendering
-            imageRendering: isMobile ? 'optimizeSpeed' : 'auto',
-            // Prevent mobile glitches
-            WebkitTapHighlightColor: 'transparent',
-            // Smooth mobile interactions
-            transition: isMobile ? 'all 0.15s ease' : 'none',
-            // Better mobile sizing
-            maxWidth: isMobile ? '100%' : 'none',
-            maxHeight: isMobile ? '100%' : 'none'
-          }}
+        <TransformWrapper
+          initialScale={1}
+          minScale={0.5}
+          maxScale={3}
+          limitToBounds={false}
+          centerOnInit={true}
+          wheel={{ step: 0.1 }}
+          pinch={{ step: 5 }}
+          doubleClick={{ step: 1.5 }}
+          panning={{ disabled: true }}
         >
-          <Layer scale={{ x: scale, y: scale }} x={offset.x} y={offset.y}>
-            {imageObj && <KonvaImage image={imageObj} />}
-            
-
-            
-            {/* Drawing mode indicator */}
-            {isLineDrawingMode && lineBarConfig.mode !== 'cursor' && (
-              <Text
-                x={10}
-                y={10}
-                text={`Drawing Mode: ${lineBarConfig.mode}`}
-                fontSize={16}
-                fill="#2196F3"
-                fontStyle="bold"
-                shadowColor="white"
-                shadowBlur={2}
-                shadowOffset={{ x: 1, y: 1 }}
-              />
-            )}
-            
-            {/* Delete mode indicator */}
-            {isDeleteMode && (
-              <Text
-                x={10}
-                y={isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? 35 : 10}
-                text={`Scissors Mode Active (${isDeleteMode}) - Click to cut items`}
-                fontSize={16}
-                fill="#ff4444"
-                fontStyle="bold"
-                shadowColor="white"
-                shadowBlur={2}
-                shadowOffset={{ x: 1, y: 1 }}
-              />
-            )}
-
-            {cones.map((cone, i) => (
-              <MemoCone
-                key={`cone-${i}`}
-                cone={cone}
-                index={i}
-                onDragEnd={handleDragEndCone}
-                onSelect={handleItemClick}
-              />
-            ))}
-
-            {players.map((player) => (
-              <MemoPlayer
-                key={player.id}
-                player={player}
-                onDragEnd={handleDragEndPlayer}
-                onSelect={handleItemClick}
-              />
-            ))}
-
-            {/* Render footballs */}
-            {footballs.map((fb) => (
-              <MemoFootball
-                key={fb.id}
-                football={fb}
-                onDragEnd={handleDragEndFootball}
-                onSelect={handleItemClick}
-              />
-            ))}
-
-
-            {draggingFromPanel === 'cone' && dragPosition && (
-                <RegularPolygon
-                  x={(dragPosition.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale}
-                  y={(dragPosition.y - offset.y - ICON_SIZE / 2) / scale}
-                  sides={3}
-                  radius={coneSizeToRadius[coneSize]}
-                  fill={coneColor}
-                  stroke="black"
-                  strokeWidth={1}
-                  opacity={0.6}
-                  rotation={0}
-                />
-            )}
-            {(draggingFromPanel === 'team1' || draggingFromPanel === 'team2') && dragPosition && (
-                <Group
-                  x={(dragPosition.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale}
-                  y={(dragPosition.y - offset.y - ICON_SIZE / 2) / scale}
-                >
-                  {(() => {
-                    const color = draggingFromPanel === 'team1' ? playerColorTeam1 : playerColorTeam2;
-                    const style = draggingFromPanel === 'team1' ? playerStyleTeam1 : playerStyleTeam2;
-                    const stripeColor = draggingFromPanel === 'team1' ? playerStripeColorTeam1 : playerStripeColorTeam2;
-                    const size = ICON_SIZE;
-                    const labelType = draggingFromPanel === 'team1' ? playerLabelTypeTeam1 : playerLabelTypeTeam2;
-                    const customText = draggingFromPanel === 'team1' ? playerCustomTextTeam1 : playerCustomTextTeam2;
-                    const nextNumber = draggingFromPanel === 'team1' ? nextPlayerNumberTeam1 : nextPlayerNumberTeam2;
-                    
-                    const radius = size / 2;
-                    let playerLabel = '';
-                    if (labelType === 'number') {
-                      playerLabel = nextNumber.toString();
-                    } else if (labelType === 'text') {
-                      playerLabel = customText;
-                    }
-                    
-                    return (
-                      <>
-                        {style === 'striped' ? (
-                          <Group
-                            clipFunc={(ctx) => {
-                              ctx.beginPath();
-                              ctx.arc(0, 0, radius - 1, 0, 2 * Math.PI);
-                              ctx.closePath();
-                            }}
-                          >
-                            {/* Base circle with main color */}
-                            <Circle
-                              radius={radius}
-                              fill={color}
-                              opacity={0.6}
-                            />
-                            {/* Create stripes using multiple rectangles */}
-                            {[...Array(6)].map((_, i) => (
-                              <Rect
-                                key={i}
-                                x={-size / 2 + (i * (size / 6))}
-                                y={-size / 2}
-                                width={size / 12}
-                                height={size}
-                                fill={stripeColor}
-                                opacity={0.6}
-                                cornerRadius={0}
-                              />
-                            ))}
-                          </Group>
-                        ) : (
-                          <Circle
-                            radius={radius}
-                            fill={color}
-                            opacity={0.6}
-                          />
-                        )}
-                        
-                        {/* Centered Text Label */}
-                        {(playerLabel || getNextLabel(draggingFromPanel)) && (
-                          <Text
-                            text={playerLabel || getNextLabel(draggingFromPanel)}
-                            fontSize={playerLabel ? 24 : 20}
-                            fill="black"
-                            offsetX={((playerLabel ? 24 : 20) * (playerLabel || getNextLabel(draggingFromPanel)).length * 0.6) / 2}
-                            offsetY={((playerLabel ? 24 : 20) * 0.7) / 2}
-                            fontStyle="bold"
-                            fontFamily="Arial, sans-serif"
-                          />
-                        )}
-                      </>
-                    );
-                  })()}
-                </Group>
-            )}
-            {draggingFromPanel === 'line' && dragPosition && (
-              <Arrow
-                points={[
-                  (dragPosition.x - SIDE_PANEL_WIDTH - offset.x - 40) / scale,
-                  (dragPosition.y - offset.y) / scale,
-                  (dragPosition.x - SIDE_PANEL_WIDTH - offset.x + 40) / scale,
-                  (dragPosition.y - offset.y) / scale,
-                ]}
-                stroke={lineBarConfig.color || '#2563eb'}
-                fill={lineBarConfig.color || '#2563eb'}
-                strokeWidth={lineBarConfig.thickness || 4}
-                dash={lineBarConfig.dash || []}
-                pointerAtBeginning={!!lineBarConfig.arrowStart}
-                pointerAtEnding={!!lineBarConfig.arrowEnd}
-                pointerLength={(lineBarConfig.thickness || 4) * 4}
-                pointerWidth={(lineBarConfig.thickness || 4) * 4}
-                opacity={0.6}
-              />
-            )}
-            {draggingFromPanel === 'football' && dragPosition && (
-              <Text
-                text="⚽"
-                fontSize={ICON_SIZE}
-                x={(dragPosition.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale}
-                y={(dragPosition.y - offset.y - ICON_SIZE / 2) / scale}
-                opacity={0.6}
-              />
-            )}
-
-
-
-
-        {lines.map(line => {
-          // Special handling for free draw lines with arrows
-          if (line.type === 'free' && (line.arrowStart || line.arrowEnd)) {
-            return (
-              <Group key={line.id} onClick={(e) => {
-                e.evt.preventDefault();
-                e.evt.stopPropagation();
-                handleItemClick(`line-${line.id}`, e);
+          <TransformComponent>
+            <Stage
+              width={isMobile ? (isSmallMobile ? Math.min(window.innerWidth - 10, 600) : Math.min(window.innerWidth - 20, 700)) : Math.min(window.innerWidth - SIDE_PANEL_WIDTH * 2 - 8, 1100)}
+              height={isMobile ? (window.innerWidth > window.innerHeight ? Math.min(window.innerHeight - 40, 500) : window.innerHeight - 150) : Math.min(window.innerHeight, 700)}
+              onClick={handleStageClick}
+              ref={stageRef}
+              className={`${isDeleteMode ? 'scissors-cursor' : ''} ${(isDrawing || isLineDrawingMode || isDeleteMode) ? 'drawing-mode' : ''}`}
+              onMouseMove={e => {
+                if (draggingFromPanel) {
+                  setDragPosition(e.target.getStage().getPointerPosition());
+                }
+                // Always handle mouse move for line drawing
+                handleStageMouseMove(e);
               }}
-              onDblClick={(e) => {
-                e.evt.preventDefault();
-                e.evt.stopPropagation();
-                handleDoubleClickLine(line.id, e);
-              }}>
-                {/* Main free draw line */}
+              onMouseUp={handleStageMouseUp}
+              onMouseDown={handleStageMouseDown}
+              onTouchMove={e => {
+                // Always handle touch move for line drawing completion
+                if (isDrawing || drawingLine || draggingFromPanel || isLineDrawingMode) {
+                  e.evt.preventDefault();
+                  if (draggingFromPanel) {
+                    const stage = e.target.getStage();
+                    const point = stage.getPointerPosition();
+                    setDragPosition(point);
+                  }
+                  handleStageMouseMove(e);
+                }
+                // If not drawing, allow natural scrolling
+              }}
+              onTouchEnd={e => {
+                // Always handle touch end for line drawing completion
+                if (isDrawing || drawingLine || draggingFromPanel || isLineDrawingMode) {
+                  e.evt.preventDefault();
+                  handleStageMouseUp(e);
+                }
+              }}
+              onTouchStart={e => {
+                // Only prevent default if we're actually drawing or dragging
+                if (isDrawing || draggingFromPanel || isLineDrawingMode) {
+                  e.evt.preventDefault();
+                  handleStageMouseDown(e);
+                }
+              }}
+              style={{ 
+                cursor: isDeleteMode ? 'crosshair' : (isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? 'crosshair' : 'default'),
+                border: isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? '2px solid #2196F3' : 'none',
+                borderRadius: isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? '4px' : '0',
+                touchAction: (isDrawing || isLineDrawingMode || isDeleteMode) ? 'none' : 'pan-y',
+                WebkitUserSelect: 'none',
+                userSelect: 'none',
+                // Mobile performance improvements
+                transform: 'translateZ(0)',
+                WebkitTransform: 'translateZ(0)',
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
+                // Better mobile rendering
+                imageRendering: isMobile ? 'optimizeSpeed' : 'auto',
+                // Prevent mobile glitches
+                WebkitTapHighlightColor: 'transparent',
+                // Smooth mobile interactions
+                transition: isMobile ? 'all 0.15s ease' : 'none',
+                // Better mobile sizing
+                maxWidth: isMobile ? '100%' : 'none',
+                maxHeight: isMobile ? '100%' : 'none'
+              }}
+            >
+              <Layer scale={{ x: scale, y: scale }} x={offset.x} y={offset.y}>
+                {imageObj && <KonvaImage image={imageObj} />}
+                
+
+                
+                {/* Drawing mode indicator */}
+                {isLineDrawingMode && lineBarConfig.mode !== 'cursor' && (
+                  <Text
+                    x={10}
+                    y={10}
+                    text={`Drawing Mode: ${lineBarConfig.mode}`}
+                    fontSize={16}
+                    fill="#2196F3"
+                    fontStyle="bold"
+                    shadowColor="white"
+                    shadowBlur={2}
+                    shadowOffset={{ x: 1, y: 1 }}
+                  />
+                )}
+                
+                {/* Delete mode indicator */}
+                {isDeleteMode && (
+                  <Text
+                    x={10}
+                    y={isLineDrawingMode && lineBarConfig.mode !== 'cursor' ? 35 : 10}
+                    text={`Scissors Mode Active (${isDeleteMode}) - Click to cut items`}
+                    fontSize={16}
+                    fill="#ff4444"
+                    fontStyle="bold"
+                    shadowColor="white"
+                    shadowBlur={2}
+                    shadowOffset={{ x: 1, y: 1 }}
+                  />
+                )}
+
+                {cones.map((cone, i) => (
+                  <MemoCone
+                    key={`cone-${i}`}
+                    cone={cone}
+                    index={i}
+                    onDragEnd={handleDragEndCone}
+                    onSelect={handleItemClick}
+                  />
+                ))}
+
+                {players.map((player) => (
+                  <MemoPlayer
+                    key={player.id}
+                    player={player}
+                    onDragEnd={handleDragEndPlayer}
+                    onSelect={handleItemClick}
+                  />
+                ))}
+
+                {/* Render footballs */}
+                {footballs.map((fb) => (
+                  <MemoFootball
+                    key={fb.id}
+                    football={fb}
+                    onDragEnd={handleDragEndFootball}
+                    onSelect={handleItemClick}
+                  />
+                ))}
+
+
+                {draggingFromPanel === 'cone' && dragPosition && (
+                    <RegularPolygon
+                      x={(dragPosition.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale}
+                      y={(dragPosition.y - offset.y - ICON_SIZE / 2) / scale}
+                      sides={3}
+                      radius={coneSizeToRadius[coneSize]}
+                      fill={coneColor}
+                      stroke="black"
+                      strokeWidth={1}
+                      opacity={0.6}
+                      rotation={0}
+                    />
+                )}
+                {(draggingFromPanel === 'team1' || draggingFromPanel === 'team2') && dragPosition && (
+                    <Group
+                      x={(dragPosition.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale}
+                      y={(dragPosition.y - offset.y - ICON_SIZE / 2) / scale}
+                    >
+                      {(() => {
+                        const color = draggingFromPanel === 'team1' ? playerColorTeam1 : playerColorTeam2;
+                        const style = draggingFromPanel === 'team1' ? playerStyleTeam1 : playerStyleTeam2;
+                        const stripeColor = draggingFromPanel === 'team1' ? playerStripeColorTeam1 : playerStripeColorTeam2;
+                        const size = ICON_SIZE;
+                        const labelType = draggingFromPanel === 'team1' ? playerLabelTypeTeam1 : playerLabelTypeTeam2;
+                        const customText = draggingFromPanel === 'team1' ? playerCustomTextTeam1 : playerCustomTextTeam2;
+                        const nextNumber = draggingFromPanel === 'team1' ? nextPlayerNumberTeam1 : nextPlayerNumberTeam2;
+                        
+                        const radius = size / 2;
+                        let playerLabel = '';
+                        if (labelType === 'number') {
+                          playerLabel = nextNumber.toString();
+                        } else if (labelType === 'text') {
+                          playerLabel = customText;
+                        }
+                        
+                        return (
+                          <>
+                            {style === 'striped' ? (
+                              <Group
+                                clipFunc={(ctx) => {
+                                  ctx.beginPath();
+                                  ctx.arc(0, 0, radius - 1, 0, 2 * Math.PI);
+                                  ctx.closePath();
+                                }}
+                              >
+                                {/* Base circle with main color */}
+                                <Circle
+                                  radius={radius}
+                                  fill={color}
+                                  opacity={0.6}
+                                />
+                                {/* Create stripes using multiple rectangles */}
+                                {[...Array(6)].map((_, i) => (
+                                  <Rect
+                                    key={i}
+                                    x={-size / 2 + (i * (size / 6))}
+                                    y={-size / 2}
+                                    width={size / 12}
+                                    height={size}
+                                    fill={stripeColor}
+                                    opacity={0.6}
+                                    cornerRadius={0}
+                                  />
+                                ))}
+                              </Group>
+                            ) : (
+                              <Circle
+                                radius={radius}
+                                fill={color}
+                                opacity={0.6}
+                              />
+                            )}
+                            
+                            {/* Centered Text Label */}
+                            {(playerLabel || getNextLabel(draggingFromPanel)) && (
+                              <Text
+                                text={playerLabel || getNextLabel(draggingFromPanel)}
+                                fontSize={playerLabel ? 24 : 20}
+                                fill="black"
+                                offsetX={((playerLabel ? 24 : 20) * (playerLabel || getNextLabel(draggingFromPanel)).length * 0.6) / 2}
+                                offsetY={((playerLabel ? 24 : 20) * 0.7) / 2}
+                                fontStyle="bold"
+                                fontFamily="Arial, sans-serif"
+                              />
+                            )}
+                          </>
+                        );
+                      })()}
+                    </Group>
+                )}
+                {draggingFromPanel === 'line' && dragPosition && (
+                  <Arrow
+                    points={[
+                      (dragPosition.x - SIDE_PANEL_WIDTH - offset.x - 40) / scale,
+                      (dragPosition.y - offset.y) / scale,
+                      (dragPosition.x - SIDE_PANEL_WIDTH - offset.x + 40) / scale,
+                      (dragPosition.y - offset.y) / scale,
+                    ]}
+                    stroke={lineBarConfig.color || '#2563eb'}
+                    fill={lineBarConfig.color || '#2563eb'}
+                    strokeWidth={lineBarConfig.thickness || 4}
+                    dash={lineBarConfig.dash || []}
+                    pointerAtBeginning={!!lineBarConfig.arrowStart}
+                    pointerAtEnding={!!lineBarConfig.arrowEnd}
+                    pointerLength={(lineBarConfig.thickness || 4) * 4}
+                    pointerWidth={(lineBarConfig.thickness || 4) * 4}
+                    opacity={0.6}
+                  />
+                )}
+                {draggingFromPanel === 'football' && dragPosition && (
+                  <Text
+                    text="⚽"
+                    fontSize={ICON_SIZE}
+                    x={(dragPosition.x - SIDE_PANEL_WIDTH - offset.x - ICON_SIZE / 2) / scale}
+                    y={(dragPosition.y - offset.y - ICON_SIZE / 2) / scale}
+                    opacity={0.6}
+                  />
+                )}
+
+
+
+
+            {lines.map(line => {
+              // Special handling for free draw lines with arrows
+              if (line.type === 'free' && (line.arrowStart || line.arrowEnd)) {
+                return (
+                  <Group key={line.id} onClick={(e) => {
+                    e.evt.preventDefault();
+                    e.evt.stopPropagation();
+                    handleItemClick(`line-${line.id}`, e);
+                  }}
+                  onDblClick={(e) => {
+                    e.evt.preventDefault();
+                    e.evt.stopPropagation();
+                    handleDoubleClickLine(line.id, e);
+                  }}>
+                    {/* Main free draw line */}
+                    <Line
+                      points={line.points}
+                      stroke={line.color}
+                      strokeWidth={line.thickness}
+                      dash={line.dash}
+                      lineCap="round"
+                      lineJoin="round"
+                      opacity={selectedItems.has(`line-${line.id}`) ? 0.7 : 1}
+                    />
+                    
+                    {/* Start arrow */}
+                    {line.arrowStart && line.points.length >= 4 && (
+                      <Arrow
+                        points={[
+                          line.points[2], line.points[3],
+                          line.points[0], line.points[1]
+                        ]}
+                        stroke={line.color}
+                        fill={line.color}
+                        strokeWidth={line.thickness}
+                        pointerLength={line.thickness * 3}
+                        pointerWidth={line.thickness * 2}
+                        pointerAtBeginning={false}
+                        pointerAtEnding={true}
+                        opacity={selectedItems.has(`line-${line.id}`) ? 0.7 : 1}
+                      />
+                    )}
+                    
+                    {/* End arrow */}
+                    {line.arrowEnd && line.points.length >= 4 && (
+                      <Arrow
+                        points={[
+                          line.points[line.points.length - 4], line.points[line.points.length - 3],
+                          line.points[line.points.length - 2], line.points[line.points.length - 1]
+                        ]}
+                        stroke={line.color}
+                        fill={line.color}
+                        strokeWidth={line.thickness}
+                        pointerLength={line.thickness * 3}
+                        pointerWidth={line.thickness * 2}
+                        pointerAtBeginning={false}
+                        pointerAtEnding={true}
+                        opacity={selectedItems.has(`line-${line.id}`) ? 0.7 : 1}
+                      />
+                    )}
+                  </Group>
+                );
+              }
+              
+              // Use Arrow component for straight and curved lines with arrows
+              if ((line.type === 'straight' || line.type === 'curve') && (line.arrowStart || line.arrowEnd)) {
+                return (
+                  <Arrow
+                    key={line.id}
+                    points={line.points}
+                    stroke={line.color}
+                    fill={line.color}
+                    strokeWidth={line.thickness}
+                    dash={line.dash}
+                    pointerAtBeginning={!!line.arrowStart}
+                    pointerAtEnding={!!line.arrowEnd}
+                    tension={line.type === 'curve' ? 1 : 0} // Add tension for curves
+                    lineCap="round"
+                    lineJoin="round"
+                    onClick={(e) => {
+                      e.evt.preventDefault();
+                      e.evt.stopPropagation();
+                      handleItemClick(`line-${line.id}`, e);
+                    }}
+                    onDblClick={(e) => {
+                      e.evt.preventDefault();
+                      e.evt.stopPropagation();
+                      handleDoubleClickLine(line.id, e);
+                    }}
+                    opacity={selectedItems.has(`line-${line.id}`) ? 0.7 : 1}
+                  />
+                );
+              }
+
+              // Use Line component for lines without arrows
+              return (
                 <Line
+                  key={line.id}
                   points={line.points}
                   stroke={line.color}
                   strokeWidth={line.thickness}
                   dash={line.dash}
                   lineCap="round"
                   lineJoin="round"
+                  tension={line.type === 'curve' ? 1 : 0} // Add tension for curves
+                  onClick={(e) => {
+                    e.evt.preventDefault();
+                    e.evt.stopPropagation();
+                    handleItemClick(`line-${line.id}`, e);
+                  }}
+                  onDblClick={(e) => {
+                    e.evt.preventDefault();
+                    e.evt.stopPropagation();
+                    handleDoubleClickLine(line.id, e);
+                  }}
                   opacity={selectedItems.has(`line-${line.id}`) ? 0.7 : 1}
                 />
-                
-                {/* Start arrow */}
-                {line.arrowStart && line.points.length >= 4 && (
-                  <Arrow
-                    points={[
-                      line.points[2], line.points[3],
-                      line.points[0], line.points[1]
-                    ]}
-                    stroke={line.color}
-                    fill={line.color}
-                    strokeWidth={line.thickness}
-                    pointerLength={line.thickness * 3}
-                    pointerWidth={line.thickness * 2}
-                    pointerAtBeginning={false}
-                    pointerAtEnding={true}
-                    opacity={selectedItems.has(`line-${line.id}`) ? 0.7 : 1}
-                  />
-                )}
-                
-                {/* End arrow */}
-                {line.arrowEnd && line.points.length >= 4 && (
-                  <Arrow
-                    points={[
-                      line.points[line.points.length - 4], line.points[line.points.length - 3],
-                      line.points[line.points.length - 2], line.points[line.points.length - 1]
-                    ]}
-                    stroke={line.color}
-                    fill={line.color}
-                    strokeWidth={line.thickness}
-                    pointerLength={line.thickness * 3}
-                    pointerWidth={line.thickness * 2}
-                    pointerAtBeginning={false}
-                    pointerAtEnding={true}
-                    opacity={selectedItems.has(`line-${line.id}`) ? 0.7 : 1}
-                  />
-                )}
-              </Group>
-            );
-          }
-          
-          // Use Arrow component for straight and curved lines with arrows
-          if ((line.type === 'straight' || line.type === 'curve') && (line.arrowStart || line.arrowEnd)) {
-            return (
-              <Arrow
-                key={line.id}
-                points={line.points}
-                stroke={line.color}
-                fill={line.color}
-                strokeWidth={line.thickness}
-                dash={line.dash}
-                pointerAtBeginning={!!line.arrowStart}
-                pointerAtEnding={!!line.arrowEnd}
-                tension={line.type === 'curve' ? 1 : 0} // Add tension for curves
-                lineCap="round"
-                lineJoin="round"
-                onClick={(e) => {
-                  e.evt.preventDefault();
-                  e.evt.stopPropagation();
-                  handleItemClick(`line-${line.id}`, e);
-                }}
-                onDblClick={(e) => {
-                  e.evt.preventDefault();
-                  e.evt.stopPropagation();
-                  handleDoubleClickLine(line.id, e);
-                }}
-                opacity={selectedItems.has(`line-${line.id}`) ? 0.7 : 1}
-              />
-            );
-          }
+              );
+            })}
 
-          // Use Line component for lines without arrows
-          return (
-            <Line
-              key={line.id}
-              points={line.points}
-              stroke={line.color}
-              strokeWidth={line.thickness}
-              dash={line.dash}
-              lineCap="round"
-              lineJoin="round"
-              tension={line.type === 'curve' ? 1 : 0} // Add tension for curves
-              onClick={(e) => {
-                e.evt.preventDefault();
-                e.evt.stopPropagation();
-                handleItemClick(`line-${line.id}`, e);
-              }}
-              onDblClick={(e) => {
-                e.evt.preventDefault();
-                e.evt.stopPropagation();
-                handleDoubleClickLine(line.id, e);
-              }}
-              opacity={selectedItems.has(`line-${line.id}`) ? 0.7 : 1}
-            />
-          );
-        })}
-
-                  {/* Render handles for selected line for editing */}
-                  {selectedLineId && (() => {
-                    const line = lines.find(l => l.id === selectedLineId);
-                    if (!line) return null;
-                    if (line.type === 'curve' && line.points.length === 6) {
-                      // 3 handles: start, control, end
-                      return [0, 1, 2].map(i => (
-                        <Circle
-                          key={i}
-                          x={line.points[i * 2]}
-                          y={line.points[i * 2 + 1]}
-                          radius={10}
-                          fill="#fbbf24"
-                          stroke="#b45309"
-                          strokeWidth={2}
-                          draggable
-                          onDragMove={e => handleCurveControlDrag(line.id, i, { x: e.target.x(), y: e.target.y() })}
-                        />
-                      ));
-                    } else {
-                      // 2 handles: start, end
-                      return [0, 1].map(i => (
-                        <Circle
-                          key={i}
-                          x={line.points[i * 2]}
-                          y={line.points[i * 2 + 1]}
-                          radius={10}
-                          fill="#fbbf24"         // amber
-                          stroke="#b45309"       // darker border
-                          strokeWidth={2}
-                          draggable
-                          onDragMove={e => handleLineDrag(line.id, i, { x: e.target.x(), y: e.target.y() })}
-                          onMouseEnter={e => {
-                            const container = e.target.getStage().container();
-                            container.style.cursor = 'move';
-                          }}
-                          onMouseLeave={e => {
-                            const container = e.target.getStage().container();
-                            container.style.cursor = 'default';
-                          }}
-                        />
-                      ));
-                    }
-                  })()}      
-                  {/* Render the line being drawn */}
-                  {drawingLine && (
-                    drawingLine.type === 'free' && (drawingLine.arrowStart || drawingLine.arrowEnd) ? (
-                      <Group>
-                        {/* Main free draw line */}
-                        <Line
-                          points={drawingLine.points}
-                          stroke={drawingLine.color}
-                          strokeWidth={drawingLine.thickness}
-                          dash={drawingLine.dash}
-                          lineCap="round"
-                          lineJoin="round"
-                          opacity={0.8}
-                        />
-                        
-                        {/* Start arrow */}
-                        {drawingLine.arrowStart && drawingLine.points.length >= 4 && (
+                      {/* Render handles for selected line for editing */}
+                      {selectedLineId && (() => {
+                        const line = lines.find(l => l.id === selectedLineId);
+                        if (!line) return null;
+                        if (line.type === 'curve' && line.points.length === 6) {
+                          // 3 handles: start, control, end
+                          return [0, 1, 2].map(i => (
+                            <Circle
+                              key={i}
+                              x={line.points[i * 2]}
+                              y={line.points[i * 2 + 1]}
+                              radius={10}
+                              fill="#fbbf24"
+                              stroke="#b45309"
+                              strokeWidth={2}
+                              draggable
+                              onDragMove={e => handleCurveControlDrag(line.id, i, { x: e.target.x(), y: e.target.y() })}
+                            />
+                          ));
+                        } else {
+                          // 2 handles: start, end
+                          return [0, 1].map(i => (
+                            <Circle
+                              key={i}
+                              x={line.points[i * 2]}
+                              y={line.points[i * 2 + 1]}
+                              radius={10}
+                              fill="#fbbf24"         // amber
+                              stroke="#b45309"       // darker border
+                              strokeWidth={2}
+                              draggable
+                              onDragMove={e => handleLineDrag(line.id, i, { x: e.target.x(), y: e.target.y() })}
+                              onMouseEnter={e => {
+                                const container = e.target.getStage().container();
+                                container.style.cursor = 'move';
+                              }}
+                              onMouseLeave={e => {
+                                const container = e.target.getStage().container();
+                                container.style.cursor = 'default';
+                              }}
+                            />
+                          ));
+                        }
+                      })()}      
+                      {/* Render the line being drawn */}
+                      {drawingLine && (
+                        drawingLine.type === 'free' && (drawingLine.arrowStart || drawingLine.arrowEnd) ? (
+                          <Group>
+                            {/* Main free draw line */}
+                            <Line
+                              points={drawingLine.points}
+                              stroke={drawingLine.color}
+                              strokeWidth={drawingLine.thickness}
+                              dash={drawingLine.dash}
+                              lineCap="round"
+                              lineJoin="round"
+                              opacity={0.8}
+                            />
+                            
+                            {/* Start arrow */}
+                            {drawingLine.arrowStart && drawingLine.points.length >= 4 && (
+                              <Arrow
+                                points={[
+                                  drawingLine.points[0], drawingLine.points[1],
+                                  drawingLine.points[2], drawingLine.points[3]
+                                ]}
+                                stroke={drawingLine.color}
+                                fill={drawingLine.color}
+                                strokeWidth={drawingLine.thickness}
+                                pointerLength={drawingLine.thickness * 3}
+                                pointerWidth={drawingLine.thickness * 2}
+                                pointerAtBeginning={false}
+                                pointerAtEnding={true}
+                                opacity={0.8}
+                              />
+                            )}
+                            
+                            {/* End arrow */}
+                            {drawingLine.arrowEnd && drawingLine.points.length >= 4 && (
+                              <Arrow
+                                points={[
+                                  drawingLine.points[drawingLine.points.length - 4], drawingLine.points[drawingLine.points.length - 3],
+                                  drawingLine.points[drawingLine.points.length - 2], drawingLine.points[drawingLine.points.length - 1]
+                                ]}
+                                stroke={drawingLine.color}
+                                fill={drawingLine.color}
+                                strokeWidth={drawingLine.thickness}
+                                pointerLength={drawingLine.thickness * 3}
+                                pointerWidth={drawingLine.thickness * 2}
+                                pointerAtBeginning={false}
+                                pointerAtEnding={true}
+                                opacity={0.8}
+                              />
+                            )}
+                          </Group>
+                        ) : drawingLine.arrowStart || drawingLine.arrowEnd ? (
                           <Arrow
-                            points={[
-                              drawingLine.points[0], drawingLine.points[1],
-                              drawingLine.points[2], drawingLine.points[3]
-                            ]}
+                            points={drawingLine.points}
                             stroke={drawingLine.color}
                             fill={drawingLine.color}
                             strokeWidth={drawingLine.thickness}
                             pointerLength={drawingLine.thickness * 3}
                             pointerWidth={drawingLine.thickness * 2}
-                            pointerAtBeginning={false}
-                            pointerAtEnding={true}
+                            dash={drawingLine.dash}
+                            pointerAtBeginning={!!drawingLine.arrowStart}
+                            pointerAtEnding={!!drawingLine.arrowEnd}
+                            tension={drawingLine.type === 'curve' ? 1 : 0} // Add tension for curves
+                            lineCap="round"
+                            lineJoin="round"
                             opacity={0.8}
                           />
-                        )}
-                        
-                        {/* End arrow */}
-                        {drawingLine.arrowEnd && drawingLine.points.length >= 4 && (
-                          <Arrow
-                            points={[
-                              drawingLine.points[drawingLine.points.length - 4], drawingLine.points[drawingLine.points.length - 3],
-                              drawingLine.points[drawingLine.points.length - 2], drawingLine.points[drawingLine.points.length - 1]
-                            ]}
+                        ) : (
+                          <Line
+                            points={drawingLine.points}
                             stroke={drawingLine.color}
-                            fill={drawingLine.color}
                             strokeWidth={drawingLine.thickness}
-                            pointerLength={drawingLine.thickness * 3}
-                            pointerWidth={drawingLine.thickness * 2}
-                            pointerAtBeginning={false}
-                            pointerAtEnding={true}
+                            dash={drawingLine.dash}
+                            lineCap="round"
+                            lineJoin="round"
+                            tension={drawingLine.type === 'curve' ? 1 : 0} // Add tension for curves
                             opacity={0.8}
                           />
-                        )}
-                      </Group>
-                    ) : drawingLine.arrowStart || drawingLine.arrowEnd ? (
-                      <Arrow
-                        points={drawingLine.points}
-                        stroke={drawingLine.color}
-                        fill={drawingLine.color}
-                        strokeWidth={drawingLine.thickness}
-                        pointerLength={drawingLine.thickness * 3}
-                        pointerWidth={drawingLine.thickness * 2}
-                        dash={drawingLine.dash}
-                        pointerAtBeginning={!!drawingLine.arrowStart}
-                        pointerAtEnding={!!drawingLine.arrowEnd}
-                        tension={drawingLine.type === 'curve' ? 1 : 0} // Add tension for curves
-                        lineCap="round"
-                        lineJoin="round"
-                        opacity={0.8}
-                      />
-                    ) : (
-                      <Line
-                        points={drawingLine.points}
-                        stroke={drawingLine.color}
-                        strokeWidth={drawingLine.thickness}
-                        dash={drawingLine.dash}
-                        lineCap="round"
-                        lineJoin="round"
-                        tension={drawingLine.type === 'curve' ? 1 : 0} // Add tension for curves
-                        opacity={0.8}
-                      />
-                    )
-                  )}
+                        )
+                      )}
 
 
-          </Layer>
-        </Stage>
+              </Layer>
+            </Stage>
+          </TransformComponent>
+        </TransformWrapper>
         {/* Bottom Panel - Line Drawing Controls */}
         {!isMobile && (
         <BottomPanel
@@ -2527,7 +2542,7 @@ const handleStageMouseUp = (e) => {
               padding: '16px',
               maxWidth: '300px',
               width: '100%',
-              maxHeight: '80vh',
+            maxHeight: '80vh',
             overflowY: 'auto',
               border: '2px solid #000000',
               boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
