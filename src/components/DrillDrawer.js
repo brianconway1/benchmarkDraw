@@ -48,7 +48,7 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
   const [showMobileField, setShowMobileField] = useState(false);
   const [coneSize, setConeSize] = useState('medium');
   const [coneColor, setConeColor] = useState('orange');
-  const [background, setBackground] = useState('/pitch_full.png');
+  const [background, setBackground] = useState('/watermarked_pitch_full.png');
   const [imageObj, setImageObj] = useState(null);
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -305,7 +305,7 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
   // Helper for unique IDs
   const getId = () => Math.floor(Date.now() + Math.random() * 1000);
 
-  const [image] = useImage(background, 'Anonymous');
+  const [image] = useImage(background, background);
 
   // Keyboard event handler for delete functionality
   useEffect(() => {
@@ -2019,14 +2019,14 @@ const handleStageMouseUp = (e) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setBackground('/pitch_full.png');
+                  setBackground('/watermarked_pitch_full.png');
                 }}
                 style={{
                   width: '100%',
                   padding: '12px 0',
                   fontSize: '12px',
-                  backgroundColor: background === '/pitch_full.png' ? '#000000' : '#ffffff',
-                  color: background === '/pitch_full.png' ? '#ffffff' : '#000000',
+                  backgroundColor: background === '/watermarked_pitch_full.png' ? '#000000' : '#ffffff',
+                  color: background === '/watermarked_pitch_full.png' ? '#ffffff' : '#000000',
                   border: '2px solid #000000',
                   borderRadius: '8px',
                   cursor: 'pointer',
@@ -2040,14 +2040,14 @@ const handleStageMouseUp = (e) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setBackground('/pitch_half.png');
+                  setBackground('/watermarked_pitch_half.png');
                 }}
                 style={{
                   width: '100%',
                   padding: '12px 0',
                   fontSize: '12px',
-                  backgroundColor: background === '/pitch_half.png' ? '#000000' : '#ffffff',
-                  color: background === '/pitch_half.png' ? '#ffffff' : '#000000',
+                  backgroundColor: background === '/watermarked_pitch_half.png' ? '#000000' : '#ffffff',
+                  color: background === '/watermarked_pitch_half.png' ? '#ffffff' : '#000000',
                   border: '2px solid #000000',
                   borderRadius: '8px',
                   cursor: 'pointer',
@@ -2061,14 +2061,14 @@ const handleStageMouseUp = (e) => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setBackground('/pitch_blank.png');
+                  setBackground('/watermarked_pitch_blank.png');
                 }}
                 style={{
                   width: '100%',
                   padding: '12px 0',
                   fontSize: '12px',
-                  backgroundColor: background === '/pitch_blank.png' ? '#000000' : '#ffffff',
-                  color: background === '/pitch_blank.png' ? '#ffffff' : '#000000',
+                  backgroundColor: background === '/watermarked_pitch_blank.png' ? '#000000' : '#ffffff',
+                  color: background === '/watermarked_pitch_blank.png' ? '#ffffff' : '#000000',
                   border: '2px solid #000000',
                   borderRadius: '8px',
                   cursor: 'pointer',
@@ -2917,14 +2917,14 @@ const handleStageMouseUp = (e) => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <button
                 onClick={() => {
-                  setBackground('/pitch_full.png');
+                  setBackground('/watermarked_pitch_full.png');
                   setShowMobileField(false);
                 }}
                 style={{
                   width: '100%',
                   padding: '15px',
-                  backgroundColor: background === '/pitch_full.png' ? '#000000' : '#ffffff',
-                  color: background === '/pitch_full.png' ? '#ffffff' : '#000000',
+                  backgroundColor: background === '/watermarked_pitch_full.png' ? '#000000' : '#ffffff',
+                  color: background === '/watermarked_pitch_full.png' ? '#ffffff' : '#000000',
                   border: '2px solid #000000',
                   borderRadius: '8px',
                   cursor: 'pointer',
@@ -2936,14 +2936,14 @@ const handleStageMouseUp = (e) => {
               </button>
               <button
                 onClick={() => {
-                  setBackground('/pitch_half.png');
+                  setBackground('/watermarked_pitch_half.png');
                   setShowMobileField(false);
                 }}
                 style={{
                   width: '100%',
                   padding: '15px',
-                  backgroundColor: background === '/pitch_half.png' ? '#000000' : '#ffffff',
-                  color: background === '/pitch_half.png' ? '#ffffff' : '#000000',
+                  backgroundColor: background === '/watermarked_pitch_half.png' ? '#000000' : '#ffffff',
+                  color: background === '/watermarked_pitch_half.png' ? '#ffffff' : '#000000',
                   border: '2px solid #000000',
                   borderRadius: '8px',
                   cursor: 'pointer',
@@ -2955,14 +2955,14 @@ const handleStageMouseUp = (e) => {
               </button>
               <button
                 onClick={() => {
-                  setBackground('/pitch_blank.png');
+                  setBackground('/watermarked_pitch_blank.png');
                   setShowMobileField(false);
                 }}
                 style={{
                   width: '100%',
                   padding: '15px',
-                  backgroundColor: background === '/pitch_blank.png' ? '#000000' : '#ffffff',
-                  color: background === '/pitch_blank.png' ? '#ffffff' : '#000000',
+                  backgroundColor: background === '/watermarked_pitch_blank.png' ? '#000000' : '#ffffff',
+                  color: background === '/watermarked_pitch_blank.png' ? '#ffffff' : '#000000',
                   border: '2px solid #000000',
                   borderRadius: '8px',
                   cursor: 'pointer',

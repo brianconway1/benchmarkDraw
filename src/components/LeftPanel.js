@@ -106,12 +106,12 @@ const LeftPanel = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setBackground('/pitch_full.png');
+              setBackground('/watermarked_pitch_full.png');
             }}
             style={{
               ...buttonStyle,
-              background: background === '/pitch_full.png' ? '#000000' : '#ffffff',
-              color: background === '/pitch_full.png' ? '#ffffff' : '#000000',
+              background: background === '/watermarked_pitch_full.png' ? '#000000' : '#ffffff',
+              color: background === '/watermarked_pitch_full.png' ? '#ffffff' : '#000000',
             }}
           >
             {isMobile ? (isSmallMobile ? 'Full' : 'Full') : 'Full Field'}
@@ -119,12 +119,12 @@ const LeftPanel = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setBackground('/pitch_half.png');
+              setBackground('/watermarked_pitch_half.png');
             }}
             style={{
               ...buttonStyle,
-              background: background === '/pitch_half.png' ? '#000000' : '#ffffff',
-              color: background === '/pitch_half.png' ? '#ffffff' : '#000000',
+              background: background === '/watermarked_pitch_half.png' ? '#000000' : '#ffffff',
+              color: background === '/watermarked_pitch_half.png' ? '#ffffff' : '#000000',
             }}
           >
             {isMobile ? (isSmallMobile ? 'Half' : 'Half') : 'Half Field'}
@@ -132,12 +132,12 @@ const LeftPanel = ({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setBackground('/pitch_blank.png');
+              setBackground('/watermarked_pitch_blank.png');
             }}
             style={{
               ...buttonStyle,
-              background: background === '/pitch_blank.png' ? '#000000' : '#ffffff',
-              color: background === '/pitch_blank.png' ? '#ffffff' : '#000000',
+              background: background === '/watermarked_pitch_blank.png' ? '#000000' : '#ffffff',
+              color: background === '/watermarked_pitch_blank.png' ? '#ffffff' : '#000000',
             }}
           >
             {isMobile ? (isSmallMobile ? 'Blank' : 'Blank') : 'Blank'}
