@@ -841,14 +841,8 @@ const handleDragCone = (index, pos) => {
     
     // Check for horizontal alignment (same Y coordinate)
     for (const obj of objects) {
-      let objY = obj.y;
-      // Adjust for football text baseline - footballs need to align by their visual center
-      if (obj.type === 'football') {
-        objY = obj.y + ICON_SIZE * 0.1; // Adjust for text baseline offset
-      }
-      
-      if (Math.abs(objY - currentY) <= snapDistance) {
-        guides.horizontal = objY;
+      if (Math.abs(obj.y - currentY) <= snapDistance) {
+        guides.horizontal = obj.y;
         break;
       }
     }
@@ -863,14 +857,8 @@ const handleDragCone = (index, pos) => {
     
     // Check for exact position snap
     for (const obj of objects) {
-      let objY = obj.y;
-      // Adjust for football text baseline
-      if (obj.type === 'football') {
-        objY = obj.y + ICON_SIZE * 0.1;
-      }
-      
-      if (Math.abs(obj.x - currentX) <= snapDistance && Math.abs(objY - currentY) <= snapDistance) {
-        guides.snapPosition = { x: obj.x, y: objY };
+      if (Math.abs(obj.x - currentX) <= snapDistance && Math.abs(obj.y - currentY) <= snapDistance) {
+        guides.snapPosition = { x: obj.x, y: obj.y };
         break;
       }
     }
@@ -1171,7 +1159,7 @@ const MemoFootball = React.memo(function Football({ football, onDragEnd, onSelec
         x={ICON_SIZE / 2}
         y={ICON_SIZE / 2}
         offsetX={ICON_SIZE / 2}
-        offsetY={ICON_SIZE / 2 + ICON_SIZE * 0.1}
+        offsetY={ICON_SIZE / 2}
         align="center"
         verticalAlign="middle"
       />
@@ -1455,7 +1443,8 @@ const handleStageMouseUp = (e) => {
     canvasY = snapped.y;
     
     pushHistory();
-    setFootballs(fbs => [...fbs, { id: getId(), x: canvasX, y: canvasY }]);
+    // Store football position at its visual center (accounting for text baseline offset)
+    setFootballs(fbs => [...fbs, { id: getId(), x: canvasX, y: canvasY - ICON_SIZE * 0.1 }]);
     // Reset line drawing mode when dropping footballs
     setIsLineDrawingMode(false);
   }
@@ -1850,7 +1839,7 @@ const handleStageMouseUp = (e) => {
                       x={snapped.x + ICON_SIZE / 2}
                       y={snapped.y + ICON_SIZE / 2}
                       offsetX={ICON_SIZE / 2}
-                      offsetY={ICON_SIZE / 2 + ICON_SIZE * 0.1}
+                      offsetY={ICON_SIZE / 2}
                       opacity={0.6}
                       align="center"
                       verticalAlign="middle"
