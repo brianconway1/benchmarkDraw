@@ -1137,8 +1137,8 @@ const MemoCone = React.memo(function Cone({ cone, index, onDragEnd, onSelect }) 
 const MemoFootball = React.memo(function Football({ football, onDragEnd, onSelect }) {
   return (
     <Group
-      x={football.x}
-      y={football.y}
+      x={football.x - ICON_SIZE / 2}
+      y={football.y - ICON_SIZE / 2}
       draggable
       onDragEnd={e => onDragEnd(football.id, e)}
       onClick={(e) => {
@@ -1443,8 +1443,7 @@ const handleStageMouseUp = (e) => {
     canvasY = snapped.y;
     
     pushHistory();
-    // Store football position at its visual center (accounting for text baseline offset)
-    setFootballs(fbs => [...fbs, { id: getId(), x: canvasX, y: canvasY - ICON_SIZE * 0.1 }]);
+    setFootballs(fbs => [...fbs, { id: getId(), x: canvasX, y: canvasY }]);
     // Reset line drawing mode when dropping footballs
     setIsLineDrawingMode(false);
   }
@@ -1836,8 +1835,8 @@ const handleStageMouseUp = (e) => {
                     <Text
                       text="⚽"
                       fontSize={ICON_SIZE}
-                      x={snapped.x + ICON_SIZE / 2}
-                      y={snapped.y + ICON_SIZE / 2}
+                      x={snapped.x}
+                      y={snapped.y}
                       offsetX={ICON_SIZE / 2}
                       offsetY={ICON_SIZE / 2}
                       opacity={0.6}
