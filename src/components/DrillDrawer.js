@@ -101,6 +101,14 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  
+  // Alignment guides state
+  const [alignmentGuides, setAlignmentGuides] = useState({
+    horizontal: null,
+    vertical: null,
+    snapPosition: null
+  });
+  const [snapDistance] = useState(15); // pixels
 
   // Update responsive constants on window resize
   useEffect(() => {
@@ -643,6 +651,12 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
       canvasX = (pos.x - offset.x - ICON_SIZE / 2) / scale;
       canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
     }
+    
+    // Apply alignment guides and snapping
+    const snapped = applySnapping(canvasX, canvasY);
+    canvasX = snapped.x;
+    canvasY = snapped.y;
+    
     const color = team === 'team1' ? playerColorTeam1 : playerColorTeam2;
     const style = team === 'team1' ? playerStyleTeam1 : playerStyleTeam2;
     const stripeColor = team === 'team1' ? playerStripeColorTeam1 : playerStripeColorTeam2;
@@ -810,6 +824,84 @@ const handleDragCone = (index, pos) => {
       setEditingLineId(null);
     }
     setEditingText('');
+  };
+
+  // Alignment guides helper functions
+  const getAllObjects = () => {
+    return [
+      ...cones.map(cone => ({ ...cone, type: 'cone' })),
+      ...players.map(player => ({ ...player, type: 'player' })),
+      ...footballs.map(football => ({ ...football, type: 'football' }))
+    ];
+  };
+
+  const findAlignmentGuides = (currentX, currentY) => {
+    const objects = getAllObjects();
+    const guides = { horizontal: null, vertical: null, snapPosition: null };
+    
+    // Check for horizontal alignment (same Y coordinate)
+    for (const obj of objects) {
+      if (Math.abs(obj.y - currentY) <= snapDistance) {
+        guides.horizontal = obj.y;
+        break;
+      }
+    }
+    
+    // Check for vertical alignment (same X coordinate)
+    for (const obj of objects) {
+      if (Math.abs(obj.x - currentX) <= snapDistance) {
+        guides.vertical = obj.x;
+        break;
+      }
+    }
+    
+    // Check for exact position snap
+    for (const obj of objects) {
+      if (Math.abs(obj.x - currentX) <= snapDistance && Math.abs(obj.y - currentY) <= snapDistance) {
+        guides.snapPosition = { x: obj.x, y: obj.y };
+        break;
+      }
+    }
+    
+    return guides;
+  };
+
+  const applySnapping = (x, y) => {
+    const guides = findAlignmentGuides(x, y);
+    let snappedX = x;
+    let snappedY = y;
+    
+    // Grid-based snapping (10 pixel grid)
+    const gridSize = 10;
+    const gridX = Math.round(x / gridSize) * gridSize;
+    const gridY = Math.round(y / gridSize) * gridSize;
+    
+    // Check if we're close to grid points
+    const gridSnapDistance = 8; // Smaller distance for grid snapping
+    const isNearGridX = Math.abs(x - gridX) <= gridSnapDistance;
+    const isNearGridY = Math.abs(y - gridY) <= gridSnapDistance;
+    
+    // Apply horizontal snapping (object alignment takes precedence over grid)
+    if (guides.horizontal !== null) {
+      snappedY = guides.horizontal;
+    } else if (isNearGridY) {
+      snappedY = gridY;
+    }
+    
+    // Apply vertical snapping (object alignment takes precedence over grid)
+    if (guides.vertical !== null) {
+      snappedX = guides.vertical;
+    } else if (isNearGridX) {
+      snappedX = gridX;
+    }
+    
+    // Apply exact position snapping (takes highest precedence)
+    if (guides.snapPosition !== null) {
+      snappedX = guides.snapPosition.x;
+      snappedY = guides.snapPosition.y;
+    }
+    
+    return { x: snappedX, y: snappedY, guides };
   };
 
   // Konva drag event handlers for in-canvas items
@@ -1313,6 +1405,12 @@ const handleStageMouseUp = (e) => {
       canvasX = (pos.x - offset.x - ICON_SIZE / 2) / scale;
       canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
     }
+    
+    // Apply alignment guides and snapping
+    const snapped = applySnapping(canvasX, canvasY);
+    canvasX = snapped.x;
+    canvasY = snapped.y;
+    
     pushHistory();
     setCones([...cones, {
       x: canvasX,
@@ -1334,6 +1432,12 @@ const handleStageMouseUp = (e) => {
       canvasX = (pos.x - offset.x - ICON_SIZE / 2) / scale;
       canvasY = (pos.y - offset.y - ICON_SIZE / 2) / scale;
     }
+    
+    // Apply alignment guides and snapping
+    const snapped = applySnapping(canvasX, canvasY);
+    canvasX = snapped.x;
+    canvasY = snapped.y;
+    
     pushHistory();
     setFootballs(fbs => [...fbs, { id: getId(), x: canvasX, y: canvasY }]);
     // Reset line drawing mode when dropping footballs
@@ -1597,10 +1701,15 @@ const handleStageMouseUp = (e) => {
                 ))}
 
 
-                {draggingFromPanel === 'cone' && dragPosition && (
+                {draggingFromPanel === 'cone' && dragPosition && (() => {
+                  const canvasX = (dragPosition.x - offset.x - ICON_SIZE / 2) / scale;
+                  const canvasY = (dragPosition.y - offset.y - ICON_SIZE / 2) / scale;
+                  const snapped = applySnapping(canvasX, canvasY);
+                  
+                  return (
                     <RegularPolygon
-                      x={(dragPosition.x - offset.x - ICON_SIZE / 2) / scale}
-                      y={(dragPosition.y - offset.y - ICON_SIZE / 2) / scale}
+                      x={snapped.x}
+                      y={snapped.y}
                       sides={3}
                       radius={coneSizeToRadius[coneSize]}
                       fill={coneColor}
@@ -1609,11 +1718,17 @@ const handleStageMouseUp = (e) => {
                       opacity={0.6}
                       rotation={0}
                     />
-                )}
-                {(draggingFromPanel === 'team1' || draggingFromPanel === 'team2') && dragPosition && (
+                  );
+                })()}
+                {(draggingFromPanel === 'team1' || draggingFromPanel === 'team2') && dragPosition && (() => {
+                  const canvasX = (dragPosition.x - offset.x - ICON_SIZE / 2) / scale;
+                  const canvasY = (dragPosition.y - offset.y - ICON_SIZE / 2) / scale;
+                  const snapped = applySnapping(canvasX, canvasY);
+                  
+                  return (
                     <Group
-                      x={(dragPosition.x - offset.x - ICON_SIZE / 2) / scale}
-                      y={(dragPosition.y - offset.y - ICON_SIZE / 2) / scale}
+                      x={snapped.x}
+                      y={snapped.y}
                     >
                       {(() => {
                         const color = draggingFromPanel === 'team1' ? playerColorTeam1 : playerColorTeam2;
@@ -1686,7 +1801,8 @@ const handleStageMouseUp = (e) => {
                         );
                       })()}
                     </Group>
-                )}
+                  );
+                })()}
                 {draggingFromPanel === 'line' && dragPosition && (
                   <Arrow
                     points={[
@@ -1706,15 +1822,80 @@ const handleStageMouseUp = (e) => {
                     opacity={0.6}
                   />
                 )}
-                {draggingFromPanel === 'football' && dragPosition && (
-                  <Text
-                    text="⚽"
-                    fontSize={ICON_SIZE}
-                    x={(dragPosition.x - offset.x - ICON_SIZE / 2) / scale}
-                    y={(dragPosition.y - offset.y - ICON_SIZE / 2) / scale}
-                    opacity={0.6}
-                  />
-                )}
+                {draggingFromPanel === 'football' && dragPosition && (() => {
+                  const canvasX = (dragPosition.x - offset.x - ICON_SIZE / 2) / scale;
+                  const canvasY = (dragPosition.y - offset.y - ICON_SIZE / 2) / scale;
+                  const snapped = applySnapping(canvasX, canvasY);
+                  
+                  return (
+                    <Text
+                      text="⚽"
+                      fontSize={ICON_SIZE}
+                      x={snapped.x}
+                      y={snapped.y}
+                      opacity={0.6}
+                    />
+                  );
+                })()}
+
+                {/* Alignment Guide Lines */}
+                {dragPosition && (draggingFromPanel === 'cone' || draggingFromPanel === 'team1' || draggingFromPanel === 'team2' || draggingFromPanel === 'football') && (() => {
+                  const canvasX = (dragPosition.x - offset.x - ICON_SIZE / 2) / scale;
+                  const canvasY = (dragPosition.y - offset.y - ICON_SIZE / 2) / scale;
+                  const guides = findAlignmentGuides(canvasX, canvasY);
+                  
+                  // Grid-based guide lines
+                  const gridSize = 10;
+                  const gridX = Math.round(canvasX / gridSize) * gridSize;
+                  const gridY = Math.round(canvasY / gridSize) * gridSize;
+                  const gridSnapDistance = 8;
+                  const isNearGridX = Math.abs(canvasX - gridX) <= gridSnapDistance;
+                  const isNearGridY = Math.abs(canvasY - gridY) <= gridSnapDistance;
+                  
+                  return (
+                    <>
+                      {/* Horizontal guide line (object alignment) */}
+                      {guides.horizontal !== null && (
+                        <Line
+                          points={[0, guides.horizontal, 1000, guides.horizontal]}
+                          stroke="#ff6b6b"
+                          strokeWidth={2}
+                          dash={[5, 5]}
+                          opacity={0.8}
+                        />
+                      )}
+                      {/* Vertical guide line (object alignment) */}
+                      {guides.vertical !== null && (
+                        <Line
+                          points={[guides.vertical, 0, guides.vertical, 1000]}
+                          stroke="#ff6b6b"
+                          strokeWidth={2}
+                          dash={[5, 5]}
+                          opacity={0.8}
+                        />
+                      )}
+                      {/* Grid guide lines (only show if no object alignment) */}
+                      {guides.horizontal === null && isNearGridY && (
+                        <Line
+                          points={[0, gridY, 1000, gridY]}
+                          stroke="#4ecdc4"
+                          strokeWidth={1}
+                          dash={[3, 3]}
+                          opacity={0.6}
+                        />
+                      )}
+                      {guides.vertical === null && isNearGridX && (
+                        <Line
+                          points={[gridX, 0, gridX, 1000]}
+                          stroke="#4ecdc4"
+                          strokeWidth={1}
+                          dash={[3, 3]}
+                          opacity={0.6}
+                        />
+                      )}
+                    </>
+                  );
+                })()}
 
 
 
