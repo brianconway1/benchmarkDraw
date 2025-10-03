@@ -29,7 +29,8 @@ import {
   FormatColorFill,
   Settings,
   MouseOutlined,
-  ArrowUpwardOutlined
+  ArrowUpwardOutlined,
+  RectangleOutlined
 } from '@mui/icons-material';
 import { HexColorPicker } from 'react-colorful';
 
@@ -97,7 +98,8 @@ const BottomPanel = ({
   const lineModes = [
     { name: 'Straight', value: 'straight', icon: <Straighten /> },
     { name: 'Curved', value: 'curve', icon: <ShowChart /> },
-    { name: 'Free Draw', value: 'free', icon: <Gesture /> }
+    { name: 'Free Draw', value: 'free', icon: <Gesture /> },
+    { name: 'Rectangle', value: 'rectangle', icon: <RectangleOutlined /> }
   ];
 
   const handleScreenshot = () => {
@@ -214,9 +216,9 @@ const BottomPanel = ({
                   setLineBarConfig(c => ({ 
                     ...c, 
                     mode: value,
-                    // Disable arrow heads when free draw mode is selected
-                    arrowStart: value === 'free' ? false : c.arrowStart,
-                    arrowEnd: value === 'free' ? false : c.arrowEnd
+                    // Disable arrow heads when free draw or rectangle mode is selected
+                    arrowStart: (value === 'free' || value === 'rectangle') ? false : c.arrowStart,
+                    arrowEnd: (value === 'free' || value === 'rectangle') ? false : c.arrowEnd
                   }));
                 }
               }}
@@ -352,56 +354,56 @@ const BottomPanel = ({
             {/* Arrow Configuration */}
             <FormControl size="small" sx={{ minWidth: isMobile ? (isSmallMobile ? 90 : 100) : 110 }}>
               <Tooltip 
-                title={lineBarConfig.mode === 'free' ? "Cannot add arrow heads in free draw mode" : ""}
+                title={(lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? "Cannot add arrow heads in free draw or rectangle mode" : ""}
                 arrow
-                open={lineBarConfig.mode === 'free' ? undefined : false}
+                open={(lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? undefined : false}
               >
                 <Select
                   value={`${lineBarConfig.arrowStart}-${lineBarConfig.arrowEnd}`}
                   onChange={(e) => {
-                    if (lineBarConfig.mode === 'free') {
-                      return; // Prevent changes in free draw mode
+                    if (lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') {
+                      return; // Prevent changes in free draw or rectangle mode
                     }
             const [start, end] = e.target.value.split('-').map(v => v === 'true');
             setLineBarConfig(c => ({ ...c, arrowStart: start, arrowEnd: end }));
           }}
-                  disabled={lineBarConfig.mode === 'free'}
+                  disabled={lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle'}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      color: lineBarConfig.mode === 'free' ? '#999999' : '#000000',
-                      borderColor: lineBarConfig.mode === 'free' ? '#cccccc' : '#000000',
-                      backgroundColor: lineBarConfig.mode === 'free' ? '#f5f5f5' : '#ffffff',
+                      color: (lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? '#999999' : '#000000',
+                      borderColor: (lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? '#cccccc' : '#000000',
+                      backgroundColor: (lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? '#f5f5f5' : '#ffffff',
                       fontSize: isMobile ? (isSmallMobile ? '0.7rem' : '0.8rem') : '0.875rem',
                       '& fieldset': {
-                        borderColor: lineBarConfig.mode === 'free' ? '#cccccc' : '#000000',
+                        borderColor: (lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? '#cccccc' : '#000000',
                       },
                       '&:hover fieldset': {
-                        borderColor: lineBarConfig.mode === 'free' ? '#cccccc' : '#000000',
+                        borderColor: (lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? '#cccccc' : '#000000',
                       },
                       '&.Mui-focused fieldset': {
-                        borderColor: lineBarConfig.mode === 'free' ? '#cccccc !important' : '#000000 !important',
+                        borderColor: (lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? '#cccccc !important' : '#000000 !important',
                       },
                       '&.Mui-focused': {
-                        borderColor: lineBarConfig.mode === 'free' ? '#cccccc !important' : '#000000 !important',
+                        borderColor: (lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? '#cccccc !important' : '#000000 !important',
                       }
                     },
                     '& .MuiSelect-icon': {
-                      color: lineBarConfig.mode === 'free' ? '#999999' : '#000000',
+                      color: (lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? '#999999' : '#000000',
                     },
                     '& .MuiSelect-select': {
-                      color: lineBarConfig.mode === 'free' ? '#999999' : '#000000',
+                      color: (lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? '#999999' : '#000000',
                       fontWeight: 600,
                     },
                     '& .Mui-focused': {
                       '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: lineBarConfig.mode === 'free' ? '#cccccc !important' : '#000000 !important',
+                        borderColor: (lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? '#cccccc !important' : '#000000 !important',
                       }
                     },
                     '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: lineBarConfig.mode === 'free' ? '#cccccc' : '#000000',
+                      borderColor: (lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? '#cccccc' : '#000000',
                     },
                     '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: lineBarConfig.mode === 'free' ? '#cccccc !important' : '#000000 !important',
+                      borderColor: (lineBarConfig.mode === 'free' || lineBarConfig.mode === 'rectangle') ? '#cccccc !important' : '#000000 !important',
                     }
                   }}
                 >
@@ -515,15 +517,28 @@ const BottomPanel = ({
                     />
                   )}
                   
+                  {lineBarConfig.mode === 'rectangle' && (
+                    <rect
+                      x={10}
+                      y={8}
+                      width={100}
+                      height={16}
+                      stroke={lineBarConfig.color}
+                      strokeWidth={lineBarConfig.thickness}
+                      strokeDasharray={lineBarConfig.dash.join(' ')}
+                      fill="none"
+                    />
+                  )}
+                  
                   {/* Arrow heads using the same approach as Konva Arrow component - only for straight and curved lines */}
-                  {lineBarConfig.mode !== 'free' && lineBarConfig.arrowStart && (
+                  {lineBarConfig.mode !== 'free' && lineBarConfig.mode !== 'rectangle' && lineBarConfig.arrowStart && (
                 <polygon
                       points={`${10 + lineBarConfig.thickness * 3},${16 - lineBarConfig.thickness} ${10 + lineBarConfig.thickness * 3},${16 + lineBarConfig.thickness} 10,16`}
                   fill={lineBarConfig.color}
                 />
                   )}
                   
-                  {lineBarConfig.mode !== 'free' && lineBarConfig.arrowEnd && (
+                  {lineBarConfig.mode !== 'free' && lineBarConfig.mode !== 'rectangle' && lineBarConfig.arrowEnd && (
                 <polygon
                       points={`${110 - lineBarConfig.thickness * 3},${16 - lineBarConfig.thickness} ${110 - lineBarConfig.thickness * 3},${16 + lineBarConfig.thickness} 110,16`}
                   fill={lineBarConfig.color}
@@ -532,7 +547,7 @@ const BottomPanel = ({
           </svg>
               </Box>
               <Typography variant="caption" sx={{ color: '#000000', fontStyle: 'italic', fontSize: isMobile ? (isSmallMobile ? '0.6rem' : '0.65rem') : '0.7rem', fontWeight: 600, textTransform: 'uppercase' }}>
-                {lineBarConfig.mode === 'straight' ? 'Straight' : lineBarConfig.mode === 'curve' ? 'Curved' : 'Free Draw'}
+                {lineBarConfig.mode === 'straight' ? 'Straight' : lineBarConfig.mode === 'curve' ? 'Curved' : lineBarConfig.mode === 'free' ? 'Free Draw' : 'Rectangle'}
               </Typography>
             </Box>
           </Box>

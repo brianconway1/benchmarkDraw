@@ -101,6 +101,7 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [copiedItems, setCopiedItems] = useState(null);
   
   // Alignment guides state
   const [alignmentGuides, setAlignmentGuides] = useState({
@@ -318,7 +319,20 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
   // Keyboard event handler for delete functionality
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === 'Delete' || event.key === 'Backspace') {
+      // Check for Ctrl+C or Cmd+C (copy)
+      if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+        if (selectedItems.size > 0) {
+          event.preventDefault();
+          copySelectedItems();
+        }
+      }
+      // Check for Ctrl+V or Cmd+V (paste)
+      else if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+        event.preventDefault();
+        pasteItems();
+      }
+      // Check for Delete or Backspace
+      else if (event.key === 'Delete' || event.key === 'Backspace') {
         if (selectedItems.size > 0) {
           event.preventDefault();
           deleteSelectedItems();
@@ -330,7 +344,7 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedItems]);
+  }, [selectedItems, copiedItems]);
 
   useEffect(() => {
     if (image) {
@@ -416,6 +430,90 @@ const DrillDrawer = ({ isMobile: propIsMobile, isTablet: propIsTablet, isSmallMo
     // Clear selection
     setSelectedItems(new Set());
     setIsSelectionMode(false);
+  };
+
+  const copySelectedItems = () => {
+    if (selectedItems.size === 0) return;
+    
+    const selectedPlayerIds = Array.from(selectedItems)
+      .filter(id => id.startsWith('player-'))
+      .map(id => parseInt(id.replace('player-', '')));
+    
+    const selectedConeIndices = Array.from(selectedItems)
+      .filter(id => id.startsWith('cone-'))
+      .map(id => parseInt(id.replace('cone-', '')));
+    
+    const selectedFootballIds = Array.from(selectedItems)
+      .filter(id => id.startsWith('football-'))
+      .map(id => parseInt(id.replace('football-', '')));
+    
+    const selectedLineIds = Array.from(selectedItems)
+      .filter(id => id.startsWith('line-'))
+      .map(id => parseInt(id.replace('line-', '')));
+    
+    const copiedData = {
+      players: players.filter(p => selectedPlayerIds.includes(p.id)),
+      cones: cones.filter((_, i) => selectedConeIndices.includes(i)),
+      footballs: footballs.filter(f => selectedFootballIds.includes(f.id)),
+      lines: lines.filter(l => selectedLineIds.includes(l.id))
+    };
+    
+    setCopiedItems(copiedData);
+    console.log('Copied items:', copiedData);
+  };
+
+  const pasteItems = () => {
+    if (!copiedItems) return;
+    
+    pushHistory();
+    
+    const offset = { x: 20, y: 20 }; // Offset for pasted items
+    
+    // Paste players
+    if (copiedItems.players.length > 0) {
+      const newPlayers = copiedItems.players.map(player => ({
+        ...player,
+        id: getId(),
+        x: player.x + offset.x,
+        y: player.y + offset.y
+      }));
+      setPlayers(prev => [...prev, ...newPlayers]);
+    }
+    
+    // Paste cones
+    if (copiedItems.cones.length > 0) {
+      const newCones = copiedItems.cones.map(cone => ({
+        ...cone,
+        x: cone.x + offset.x,
+        y: cone.y + offset.y
+      }));
+      setCones(prev => [...prev, ...newCones]);
+    }
+    
+    // Paste footballs
+    if (copiedItems.footballs.length > 0) {
+      const newFootballs = copiedItems.footballs.map(football => ({
+        ...football,
+        id: getId(),
+        x: football.x + offset.x,
+        y: football.y + offset.y
+      }));
+      setFootballs(prev => [...prev, ...newFootballs]);
+    }
+    
+    // Paste lines
+    if (copiedItems.lines.length > 0) {
+      const newLines = copiedItems.lines.map(line => ({
+        ...line,
+        id: getId(),
+        points: line.points.map((point, index) => 
+          index % 2 === 0 ? point + offset.x : point + offset.y
+        )
+      }));
+      setLines(prev => [...prev, ...newLines]);
+    }
+    
+    console.log('Pasted items with offset:', offset);
   };
 
   const deleteItemAtPosition = (x, y) => {
@@ -1259,6 +1357,18 @@ const handleStageMouseDown = (e) => {
       arrowStart: lineBarConfig.arrowStart,
       arrowEnd: lineBarConfig.arrowEnd
     });
+  } else if (lineBarConfig.mode === 'rectangle') {
+    // Start point for rectangle - we'll store top-left corner and current position
+    setDrawingLine({
+      id: getId(),
+      type: 'rectangle',
+      points: [canvasX, canvasY, canvasX, canvasY], // Start and end at same point initially
+      color: lineBarConfig.color,
+      thickness: lineBarConfig.thickness,
+      dash: lineBarConfig.dash,
+      arrowStart: false, // Rectangles don't have arrows
+      arrowEnd: false
+    });
   }
   
   console.log('Started drawing:', {
@@ -1333,6 +1443,12 @@ const handleStageMouseMove = (e) => {
         points: [startX, startY, midX, midY, canvasX, canvasY]
       }));
     }
+  } else if (drawingLine.type === 'rectangle') {
+    // Update the bottom-right corner for rectangle
+    setDrawingLine(prev => ({
+      ...prev,
+      points: [prev.points[0], prev.points[1], canvasX, canvasY]
+    }));
   }
   
   console.log('Drawing line:', {
@@ -1370,6 +1486,15 @@ const handleStageMouseUp = (e) => {
       const endY = drawingLine.points[5];
       const distance = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
       hasLength = distance > 5; // Minimum 5 pixel distance
+    } else if (drawingLine.type === 'rectangle') {
+      // Check if rectangle has meaningful size
+      const startX = drawingLine.points[0];
+      const startY = drawingLine.points[1];
+      const endX = drawingLine.points[2];
+      const endY = drawingLine.points[3];
+      const width = Math.abs(endX - startX);
+      const height = Math.abs(endY - startY);
+      hasLength = width > 5 && height > 5; // Minimum 5 pixel width and height
     }
     
     if (hasLength) {
@@ -1909,6 +2034,40 @@ const handleStageMouseUp = (e) => {
 
 
             {lines.map(line => {
+              // Special handling for rectangles
+              if (line.type === 'rectangle') {
+                const startX = line.points[0];
+                const startY = line.points[1];
+                const endX = line.points[2];
+                const endY = line.points[3];
+                const width = endX - startX;
+                const height = endY - startY;
+                
+                return (
+                  <Rect
+                    key={line.id}
+                    x={Math.min(startX, endX)}
+                    y={Math.min(startY, endY)}
+                    width={Math.abs(width)}
+                    height={Math.abs(height)}
+                    stroke={line.color}
+                    strokeWidth={line.thickness}
+                    dash={line.dash}
+                    onClick={(e) => {
+                      e.evt.preventDefault();
+                      e.evt.stopPropagation();
+                      handleItemClick(`line-${line.id}`, e);
+                    }}
+                    onDblClick={(e) => {
+                      e.evt.preventDefault();
+                      e.evt.stopPropagation();
+                      handleDoubleClickLine(line.id, e);
+                    }}
+                    opacity={selectedItems.has(`line-${line.id}`) ? 0.7 : 1}
+                  />
+                );
+              }
+              
               // Special handling for free draw lines with arrows
               if (line.type === 'free' && (line.arrowStart || line.arrowEnd)) {
                 return (
@@ -2074,7 +2233,18 @@ const handleStageMouseUp = (e) => {
                       })()}      
                       {/* Render the line being drawn */}
                       {drawingLine && (
-                        drawingLine.type === 'free' && (drawingLine.arrowStart || drawingLine.arrowEnd) ? (
+                        drawingLine.type === 'rectangle' ? (
+                          <Rect
+                            x={Math.min(drawingLine.points[0], drawingLine.points[2])}
+                            y={Math.min(drawingLine.points[1], drawingLine.points[3])}
+                            width={Math.abs(drawingLine.points[2] - drawingLine.points[0])}
+                            height={Math.abs(drawingLine.points[3] - drawingLine.points[1])}
+                            stroke={drawingLine.color}
+                            strokeWidth={drawingLine.thickness}
+                            dash={drawingLine.dash}
+                            opacity={0.8}
+                          />
+                        ) : drawingLine.type === 'free' && (drawingLine.arrowStart || drawingLine.arrowEnd) ? (
                           <Group>
                             {/* Main free draw line */}
                             <Line
