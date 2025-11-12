@@ -1,0 +1,18 @@
+# EAS Build ignores
+node_modules/
+.expo/
+.expo-shared/
+npm-debug.log
+yarn-error.log
+*.log
+.DS_Store
+*.pem
+ios/
+android/
+public/
+src/
+*.md
+!README.md
+.vscode/
+.idea/
+

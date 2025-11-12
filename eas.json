@@ -1,0 +1,35 @@
+{
+  "cli": {
+    "version": ">= 13.2.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true,
+        "usesNonExemptEncryption": false
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": false,
+        "usesNonExemptEncryption": false
+      }
+    },
+    "production": {
+      "ios": {
+        "simulator": false,
+        "usesNonExemptEncryption": false
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
+
