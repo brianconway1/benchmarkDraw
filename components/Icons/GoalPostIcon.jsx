@@ -2,6 +2,18 @@ import React from 'react';
 import { Line, Rect } from 'react-native-svg';
 
 const GoalPostIcon = ({ goalPost, selected = false }) => {
+  // Validate goalPost data
+  if (!goalPost || typeof goalPost.x !== 'number' || typeof goalPost.y !== 'number') {
+    console.error('Invalid goalPost data:', goalPost);
+    return null;
+  }
+  
+  // Validate coordinates
+  if (!isFinite(goalPost.x) || !isFinite(goalPost.y)) {
+    console.error('Invalid goalPost coordinates:', goalPost);
+    return null;
+  }
+  
   const width = goalPost.width || 30;
   const height = goalPost.height || 40;
   const postWidth = 3;

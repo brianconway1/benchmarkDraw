@@ -2,6 +2,18 @@ import React from 'react';
 import { Circle, Path } from 'react-native-svg';
 
 const BallIcon = ({ ball, selected = false, size = 20 }) => {
+  // Validate ball data
+  if (!ball || typeof ball.x !== 'number' || typeof ball.y !== 'number') {
+    console.error('Invalid ball data:', ball);
+    return null;
+  }
+  
+  // Validate coordinates
+  if (!isFinite(ball.x) || !isFinite(ball.y)) {
+    console.error('Invalid ball coordinates:', ball);
+    return null;
+  }
+  
   const radius = size / 2;
 
   // Simple football pattern (pentagon pattern)

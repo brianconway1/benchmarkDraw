@@ -45,13 +45,30 @@ export const useAppStore = create((set, get) => ({
   },
 
   addPlayer: (player) => {
-    const id = `player-${Date.now()}-${Math.random()}`;
-    const newPlayer = { ...player, id };
-    console.log('Adding player:', newPlayer);
-    set((state) => ({
-      players: [...state.players, newPlayer],
-    }));
-    get().pushHistory();
+    try {
+      if (!player || typeof player.x !== 'number' || typeof player.y !== 'number') {
+        console.error('Invalid player data in addPlayer:', player);
+        return;
+      }
+      if (!isFinite(player.x) || !isFinite(player.y)) {
+        console.error('Non-finite coordinates in addPlayer:', player);
+        return;
+      }
+      const id = `player-${Date.now()}-${Math.random()}`;
+      const newPlayer = { ...player, id };
+      console.log('Adding player:', newPlayer);
+      set((state) => ({
+        players: [...state.players, newPlayer],
+      }));
+      // Push history synchronously - Zustand handles state updates properly
+      try {
+        get().pushHistory();
+      } catch (error) {
+        console.error('Error pushing history after addPlayer:', error);
+      }
+    } catch (error) {
+      console.error('Error in addPlayer:', error);
+    }
   },
 
   updatePlayer: (id, updates) => {
@@ -68,13 +85,30 @@ export const useAppStore = create((set, get) => ({
   },
 
   addCone: (cone) => {
-    const id = `cone-${Date.now()}-${Math.random()}`;
-    const newCone = { ...cone, id };
-    console.log('Adding cone:', newCone);
-    set((state) => ({
-      cones: [...state.cones, newCone],
-    }));
-    get().pushHistory();
+    try {
+      if (!cone || typeof cone.x !== 'number' || typeof cone.y !== 'number') {
+        console.error('Invalid cone data in addCone:', cone);
+        return;
+      }
+      if (!isFinite(cone.x) || !isFinite(cone.y)) {
+        console.error('Non-finite coordinates in addCone:', cone);
+        return;
+      }
+      const id = `cone-${Date.now()}-${Math.random()}`;
+      const newCone = { ...cone, id };
+      console.log('Adding cone:', newCone);
+      set((state) => ({
+        cones: [...state.cones, newCone],
+      }));
+      // Push history synchronously - Zustand handles state updates properly
+      try {
+        get().pushHistory();
+      } catch (error) {
+        console.error('Error pushing history after addCone:', error);
+      }
+    } catch (error) {
+      console.error('Error in addCone:', error);
+    }
   },
 
   updateCone: (id, updates) => {
@@ -91,13 +125,30 @@ export const useAppStore = create((set, get) => ({
   },
 
   addGoalPost: (goalPost) => {
-    const id = `goalpost-${Date.now()}-${Math.random()}`;
-    const newGoalPost = { ...goalPost, id };
-    console.log('Adding goal post:', newGoalPost);
-    set((state) => ({
-      goalPosts: [...state.goalPosts, newGoalPost],
-    }));
-    get().pushHistory();
+    try {
+      if (!goalPost || typeof goalPost.x !== 'number' || typeof goalPost.y !== 'number') {
+        console.error('Invalid goalPost data in addGoalPost:', goalPost);
+        return;
+      }
+      if (!isFinite(goalPost.x) || !isFinite(goalPost.y)) {
+        console.error('Non-finite coordinates in addGoalPost:', goalPost);
+        return;
+      }
+      const id = `goalpost-${Date.now()}-${Math.random()}`;
+      const newGoalPost = { ...goalPost, id };
+      console.log('Adding goal post:', newGoalPost);
+      set((state) => ({
+        goalPosts: [...state.goalPosts, newGoalPost],
+      }));
+      // Push history synchronously - Zustand handles state updates properly
+      try {
+        get().pushHistory();
+      } catch (error) {
+        console.error('Error pushing history after addGoalPost:', error);
+      }
+    } catch (error) {
+      console.error('Error in addGoalPost:', error);
+    }
   },
 
   updateGoalPost: (id, updates) => {
@@ -114,13 +165,30 @@ export const useAppStore = create((set, get) => ({
   },
 
   addBall: (ball) => {
-    const id = `ball-${Date.now()}-${Math.random()}`;
-    const newBall = { ...ball, id };
-    console.log('Adding ball:', newBall);
-    set((state) => ({
-      balls: [...state.balls, newBall],
-    }));
-    get().pushHistory();
+    try {
+      if (!ball || typeof ball.x !== 'number' || typeof ball.y !== 'number') {
+        console.error('Invalid ball data in addBall:', ball);
+        return;
+      }
+      if (!isFinite(ball.x) || !isFinite(ball.y)) {
+        console.error('Non-finite coordinates in addBall:', ball);
+        return;
+      }
+      const id = `ball-${Date.now()}-${Math.random()}`;
+      const newBall = { ...ball, id };
+      console.log('Adding ball:', newBall);
+      set((state) => ({
+        balls: [...state.balls, newBall],
+      }));
+      // Push history synchronously - Zustand handles state updates properly
+      try {
+        get().pushHistory();
+      } catch (error) {
+        console.error('Error pushing history after addBall:', error);
+      }
+    } catch (error) {
+      console.error('Error in addBall:', error);
+    }
   },
 
   updateBall: (id, updates) => {
@@ -190,45 +258,67 @@ export const useAppStore = create((set, get) => ({
   },
 
   pushHistory: () => {
-    const state = get();
-    const newHistory = state.history.slice(0, state.historyIndex + 1);
-    const currentState = {
-      background: state.background,
-      players: [...state.players],
-      cones: [...state.cones],
-      goalPosts: [...state.goalPosts],
-      balls: [...state.balls],
-      lines: [...state.lines],
-      selectedItems: new Set(state.selectedItems),
-      history: [],
-      historyIndex: -1,
-    };
-    newHistory.push(currentState);
-    set({
-      history: newHistory,
-      historyIndex: newHistory.length - 1,
-    });
+    try {
+      const state = get();
+      // Limit history size to prevent memory issues
+      const maxHistorySize = 50;
+      let newHistory = state.history.slice(0, state.historyIndex + 1);
+      if (newHistory.length >= maxHistorySize) {
+        newHistory = newHistory.slice(-maxHistorySize + 1);
+      }
+      
+      // Safely copy state, filtering out any invalid items
+      const currentState = {
+        background: state.background,
+        players: state.players.filter(p => p && p.id && typeof p.x === 'number' && typeof p.y === 'number'),
+        cones: state.cones.filter(c => c && c.id && typeof c.x === 'number' && typeof c.y === 'number'),
+        goalPosts: state.goalPosts.filter(g => g && g.id && typeof g.x === 'number' && typeof g.y === 'number'),
+        balls: state.balls.filter(b => b && b.id && typeof b.x === 'number' && typeof b.y === 'number'),
+        lines: state.lines.filter(l => l && l.id),
+        selectedItems: Array.from(state.selectedItems || []), // Convert Set to Array for serialization
+        history: [],
+        historyIndex: -1,
+      };
+      newHistory.push(currentState);
+      set({
+        history: newHistory,
+        historyIndex: newHistory.length - 1,
+      });
+    } catch (error) {
+      console.error('Error in pushHistory:', error);
+      // Don't crash the app if history fails
+    }
   },
 
   undo: () => {
-    const state = get();
-    if (state.historyIndex > 0) {
-      const previousState = state.history[state.historyIndex - 1];
-      set({
-        ...previousState,
-        historyIndex: state.historyIndex - 1,
-      });
+    try {
+      const state = get();
+      if (state.historyIndex > 0) {
+        const previousState = state.history[state.historyIndex - 1];
+        set({
+          ...previousState,
+          selectedItems: new Set(previousState.selectedItems || []), // Convert Array back to Set
+          historyIndex: state.historyIndex - 1,
+        });
+      }
+    } catch (error) {
+      console.error('Error in undo:', error);
     }
   },
 
   redo: () => {
-    const state = get();
-    if (state.historyIndex < state.history.length - 1) {
-      const nextState = state.history[state.historyIndex + 1];
-      set({
-        ...nextState,
-        historyIndex: state.historyIndex + 1,
-      });
+    try {
+      const state = get();
+      if (state.historyIndex < state.history.length - 1) {
+        const nextState = state.history[state.historyIndex + 1];
+        set({
+          ...nextState,
+          selectedItems: new Set(nextState.selectedItems || []), // Convert Array back to Set
+          historyIndex: state.historyIndex + 1,
+        });
+      }
+    } catch (error) {
+      console.error('Error in redo:', error);
     }
   },
 

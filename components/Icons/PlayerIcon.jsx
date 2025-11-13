@@ -2,6 +2,18 @@ import React from 'react';
 import { Circle, Text as SvgText, Defs, Pattern, Rect } from 'react-native-svg';
 
 const PlayerIcon = ({ player, size = 30, selected = false }) => {
+  // Validate player data
+  if (!player || typeof player.x !== 'number' || typeof player.y !== 'number') {
+    console.error('Invalid player data:', player);
+    return null;
+  }
+  
+  // Validate coordinates
+  if (!isFinite(player.x) || !isFinite(player.y)) {
+    console.error('Invalid player coordinates:', player);
+    return null;
+  }
+  
   const radius = size / 2;
 
   const renderPlayer = () => {

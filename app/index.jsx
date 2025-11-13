@@ -35,19 +35,21 @@ export default function HomeScreen() {
       // Close if same tab is tapped again
       setBottomSheetVisible(false);
       setActiveMobileTab(null);
+      // Clear drop mode when closing tab
+      useAppStore.getState().clearDropMode();
     } else {
       setActiveMobileTab(tab);
       setBottomSheetVisible(true);
+      // Clear drop mode when switching to a different tab
+      useAppStore.getState().clearDropMode();
     }
-    // Clear drop mode when a new tab is selected
-    useAppStore.getState().clearDropMode();
   };
 
   const handleCloseBottomSheet = () => {
     setBottomSheetVisible(false);
     setActiveMobileTab(null);
-    // Clear drop mode when bottom sheet is closed
-    useAppStore.getState().clearDropMode();
+    // Don't clear drop mode here - let it persist so user can place icons
+    // Drop mode will be cleared when user taps outside canvas or explicitly cancels
   };
 
   const renderMobilePanelContent = () => {
@@ -147,7 +149,7 @@ export default function HomeScreen() {
         <View style={styles.canvasContainer}>
           <DrawingCanvas 
             width={getCanvasWidth()} 
-            height={getCanvasHeight()}
+            height={getCanvasHeight()} 
             isLandscape={isLandscape}
           />
         </View>
