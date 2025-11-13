@@ -1,14 +1,7 @@
 import React from 'react';
 import { Circle, Path } from 'react-native-svg';
-import { Ball } from '../../types';
 
-interface BallIconProps {
-  ball: Ball;
-  selected?: boolean;
-  size?: number;
-}
-
-const BallIcon: React.FC<BallIconProps> = ({ ball, selected = false, size = 20 }) => {
+const BallIcon = ({ ball, selected = false, size = 20 }) => {
   const radius = size / 2;
 
   // Simple football pattern (pentagon pattern)
@@ -52,4 +45,3 @@ const BallIcon: React.FC<BallIconProps> = ({ ball, selected = false, size = 20 }
 };
 
 export default BallIcon;
-

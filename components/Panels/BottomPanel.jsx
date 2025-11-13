@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, ScrollView, Modal } from 'react-native';
 import { useAppStore } from '../../store/appStore';
-import { DrawingMode } from '../../types';
 import Svg, { Line, Path, Rect } from 'react-native-svg';
 
-const BottomPanel: React.FC = () => {
+const BottomPanel = () => {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   const minDimension = Math.min(width, height);
@@ -23,7 +22,7 @@ const BottomPanel: React.FC = () => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showLineSettings, setShowLineSettings] = useState(false);
 
-  const lineModes: { mode: DrawingMode; label: string }[] = [
+  const lineModes = [
     { mode: 'cursor', label: 'Cursor' },
     { mode: 'straight', label: 'Straight' },
     { mode: 'curve', label: 'Curved' },
@@ -45,27 +44,27 @@ const BottomPanel: React.FC = () => {
     { name: 'Both', start: true, end: true },
   ];
 
-  const handleModeChange = (mode: DrawingMode) => {
+  const handleModeChange = (mode) => {
     clearDropModeIfActive();
     setLineConfig({ mode });
   };
 
-  const handleThicknessChange = (thickness: number) => {
+  const handleThicknessChange = (thickness) => {
     clearDropModeIfActive();
     setLineConfig({ thickness });
   };
 
-  const handleDashChange = (dash: number[]) => {
+  const handleDashChange = (dash) => {
     clearDropModeIfActive();
     setLineConfig({ dash });
   };
 
-  const handleArrowChange = (arrowStart: boolean, arrowEnd: boolean) => {
+  const handleArrowChange = (arrowStart, arrowEnd) => {
     clearDropModeIfActive();
     setLineConfig({ arrowStart, arrowEnd });
   };
 
-  const handleColorChange = (color: string) => {
+  const handleColorChange = (color) => {
     clearDropModeIfActive();
     if (lineConfig.mode === 'rectangle') {
       setBoxConfig({ strokeColor: color });
@@ -74,14 +73,14 @@ const BottomPanel: React.FC = () => {
     }
   };
 
-  const handleFillChange = (filled: boolean) => {
+  const handleFillChange = (filled) => {
     clearDropModeIfActive();
     if (lineConfig.mode === 'rectangle') {
       setBoxConfig({ filled });
     }
   };
 
-  const handleFillColorChange = (fillColor: string) => {
+  const handleFillColorChange = (fillColor) => {
     if (lineConfig.mode === 'rectangle') {
       setBoxConfig({ fillColor });
     }
@@ -589,4 +588,3 @@ const styles = StyleSheet.create({
 });
 
 export default BottomPanel;
-

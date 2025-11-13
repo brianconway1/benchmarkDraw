@@ -1,13 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
 import { useAppStore } from '../../store/appStore';
-import { BackgroundType } from '../../types';
 
-interface LeftPanelProps {
-  onBackgroundSelected?: () => void; // Callback when background is selected (to close bottom sheet on mobile)
-}
-
-const LeftPanel: React.FC<LeftPanelProps> = ({ onBackgroundSelected }) => {
+const LeftPanel = ({ onBackgroundSelected }) => {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   const minDimension = Math.min(width, height);
@@ -17,7 +12,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({ onBackgroundSelected }) => {
   const setBackground = useAppStore((state) => state.setBackground);
   const clearDropMode = useAppStore((state) => state.clearDropMode);
 
-  const backgrounds: { type: BackgroundType; label: string }[] = [
+  const backgrounds = [
     { type: 'pitch_full', label: 'Full Field' },
     { type: 'pitch_half', label: 'Half Field' },
     { type: 'pitch_blank', label: 'Blank' },
@@ -152,4 +147,3 @@ const styles = StyleSheet.create({
 });
 
 export default LeftPanel;
-

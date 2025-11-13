@@ -1,15 +1,12 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Modal, ScrollView } from 'react-native';
 import { useAppStore } from '../../store/appStore';
 import { useHistory } from '../../hooks/useHistory';
 import { exportImage } from '../../utils/exportUtils';
+import AnimationPanel from '../Animation/AnimationPanel';
+import AnimationExport from '../Animation/AnimationExport';
 
-interface ToolbarProps {
-  canvasRef: React.RefObject<any>;
-  compact?: boolean;
-}
-
-const Toolbar: React.FC<ToolbarProps> = ({ canvasRef, compact = false }) => {
+const Toolbar = ({ canvasRef, compact = false }) => {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   const minDimension = Math.min(width, height);
@@ -22,6 +19,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ canvasRef, compact = false }) => {
   const paste = useAppStore((state) => state.paste);
   const selectedItems = useAppStore((state) => state.selectedItems);
   const clearDropMode = useAppStore((state) => state.clearDropMode);
+  const [showAnimationModal, setShowAnimationModal] = useState(false);
 
   // Clear drop mode when any toolbar button is clicked
   const clearDropModeIfActive = () => {
@@ -181,6 +179,41 @@ const Toolbar: React.FC<ToolbarProps> = ({ canvasRef, compact = false }) => {
           {compact ? '📸' : 'Screenshot'}
         </Text>
       </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={[styles.button, styles.buttonPrimary, compact && styles.buttonCompact]} 
+        onPress={() => {
+          clearDropModeIfActive();
+          setShowAnimationModal(true);
+        }}
+      >
+        <Text style={[styles.buttonText, styles.buttonTextPrimary, compact && styles.buttonTextCompact]}>
+          {compact ? '🎬' : 'Animation'}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Animation Modal */}
+      <Modal visible={showAnimationModal} transparent animationType="slide" onRequestClose={() => setShowAnimationModal(false)}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Animation</Text>
+              <TouchableOpacity
+                style={styles.modalCloseButton}
+                onPress={() => setShowAnimationModal(false)}
+              >
+                <Text style={styles.modalCloseButtonText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={true}>
+              <AnimationPanel />
+              <View style={styles.animationExportContainer}>
+                <AnimationExport />
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -241,7 +274,58 @@ const styles = StyleSheet.create({
   buttonTextCompact: {
     fontSize: 18,
   },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    width: '90%',
+    maxWidth: 500,
+    maxHeight: '80%',
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderBottomWidth: 2,
+    borderBottomColor: '#000000',
+    paddingBottom: 12,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  modalCloseButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCloseButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  modalScrollView: {
+    maxHeight: 400,
+  },
+  animationExportContainer: {
+    marginTop: 16,
+  },
 });
 
 export default Toolbar;
-

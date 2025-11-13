@@ -1,17 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Modal, TextInput } from 'react-native';
 import { useAppStore } from '../../store/appStore';
-import { PlayerTeam, ConeColor, ConeSize, PlayerStyle, LabelType } from '../../types';
 import Svg, { Circle, Polygon, Path, Rect, Defs, Pattern } from 'react-native-svg';
 
 const ICON_SIZE = 30;
 
-interface RightPanelProps {
-  onIconDragStart?: (type: string, team?: PlayerTeam) => void;
-  onItemAdded?: () => void; // Callback when an item is added (to close bottom sheet on mobile)
-}
-
-const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded }) => {
+const RightPanel = ({ onIconDragStart, onItemAdded }) => {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   const minDimension = Math.min(width, height);
@@ -20,20 +14,20 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded })
   // Player settings
   const [playerColorTeam1, setPlayerColorTeam1] = useState('#2563eb');
   const [playerColorTeam2, setPlayerColorTeam2] = useState('#dc2626');
-  const [playerStyleTeam1, setPlayerStyleTeam1] = useState<PlayerStyle>('solid');
-  const [playerStyleTeam2, setPlayerStyleTeam2] = useState<PlayerStyle>('solid');
+  const [playerStyleTeam1, setPlayerStyleTeam1] = useState('solid');
+  const [playerStyleTeam2, setPlayerStyleTeam2] = useState('solid');
   const [playerStripeColorTeam1, setPlayerStripeColorTeam1] = useState('white');
   const [playerStripeColorTeam2, setPlayerStripeColorTeam2] = useState('white');
-  const [playerLabelTypeTeam1, setPlayerLabelTypeTeam1] = useState<LabelType>('number');
-  const [playerLabelTypeTeam2, setPlayerLabelTypeTeam2] = useState<LabelType>('number');
+  const [playerLabelTypeTeam1, setPlayerLabelTypeTeam1] = useState('number');
+  const [playerLabelTypeTeam2, setPlayerLabelTypeTeam2] = useState('number');
   const [playerCustomTextTeam1, setPlayerCustomTextTeam1] = useState('');
   const [playerCustomTextTeam2, setPlayerCustomTextTeam2] = useState('');
   const [nextPlayerNumberTeam1, setNextPlayerNumberTeam1] = useState(1);
   const [nextPlayerNumberTeam2, setNextPlayerNumberTeam2] = useState(2);
 
   // Cone settings
-  const [coneColor, setConeColor] = useState<ConeColor>('orange');
-  const [coneSize, setConeSize] = useState<ConeSize>('medium');
+  const [coneColor, setConeColor] = useState('orange');
+  const [coneSize, setConeSize] = useState('medium');
 
   const [showPlayer1Settings, setShowPlayer1Settings] = useState(false);
   const [showPlayer2Settings, setShowPlayer2Settings] = useState(false);
@@ -50,7 +44,7 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded })
     { name: 'Gray', value: '#6b7280' },
   ];
 
-  const coneColors: { name: string; value: ConeColor }[] = [
+  const coneColors = [
     { name: 'White', value: 'white' },
     { name: 'Black', value: 'black' },
     { name: 'Orange', value: 'orange' },
@@ -60,7 +54,7 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded })
     { name: 'Blue', value: 'blue' },
   ];
 
-  const handleAddPlayer = (team: PlayerTeam) => {
+  const handleAddPlayer = (team) => {
     const color = team === 'team1' ? playerColorTeam1 : playerColorTeam2;
     const style = team === 'team1' ? playerStyleTeam1 : playerStyleTeam2;
     const stripeColor = team === 'team1' ? playerStripeColorTeam1 : playerStripeColorTeam2;
@@ -86,7 +80,9 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded })
     console.log('RightPanel: Verified store dropMode:', verifyStore.dropMode, 'config:', verifyStore.dropModeConfig);
     
     // Close bottom sheet on mobile after entering drop mode
-    onItemAdded?.();
+    if (onItemAdded) {
+      onItemAdded();
+    }
   };
 
   const handleAddCone = () => {
@@ -98,7 +94,9 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded })
     console.log('RightPanel: Verified store dropMode:', verifyStore.dropMode);
     
     // Close bottom sheet on mobile after entering drop mode
-    onItemAdded?.();
+    if (onItemAdded) {
+      onItemAdded();
+    }
   };
 
   const handleAddGoalPost = () => {
@@ -109,7 +107,9 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded })
     console.log('RightPanel: Verified store dropMode:', verifyStore.dropMode);
     
     // Close bottom sheet on mobile after entering drop mode
-    onItemAdded?.();
+    if (onItemAdded) {
+      onItemAdded();
+    }
   };
 
   const handleAddBall = () => {
@@ -120,10 +120,12 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded })
     console.log('RightPanel: Verified store dropMode:', verifyStore.dropMode);
     
     // Close bottom sheet on mobile after entering drop mode
-    onItemAdded?.();
+    if (onItemAdded) {
+      onItemAdded();
+    }
   };
 
-  const renderPlayerIcon = (color: string, style: PlayerStyle, stripeColor: string, label: string) => {
+  const renderPlayerIcon = (color, style, stripeColor, label) => {
     const radius = ICON_SIZE / 2;
     const patternId = `stripes-${color}-${stripeColor}`;
     return (
@@ -340,4 +342,3 @@ const styles = StyleSheet.create({
 });
 
 export default RightPanel;
-

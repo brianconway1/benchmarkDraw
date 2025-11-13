@@ -1,13 +1,7 @@
 import React from 'react';
 import { Polygon } from 'react-native-svg';
-import { Cone } from '../../types';
 
-interface ConeIconProps {
-  cone: Cone;
-  selected?: boolean;
-}
-
-const ConeIcon: React.FC<ConeIconProps> = ({ cone, selected = false }) => {
+const ConeIcon = ({ cone, selected = false }) => {
   const getSize = () => {
     switch (cone.size) {
       case 'small':
@@ -35,4 +29,3 @@ const ConeIcon: React.FC<ConeIconProps> = ({ cone, selected = false }) => {
 };
 
 export default ConeIcon;
-

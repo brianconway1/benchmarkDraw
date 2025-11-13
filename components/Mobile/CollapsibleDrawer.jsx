@@ -8,15 +8,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-interface CollapsibleDrawerProps {
-  visible: boolean;
-  position: 'left' | 'right';
-  children: React.ReactNode;
-  onClose?: () => void;
-  width?: number;
-}
-
-const CollapsibleDrawer: React.FC<CollapsibleDrawerProps> = ({
+const CollapsibleDrawer = ({
   visible,
   position,
   children,
@@ -149,4 +141,3 @@ const styles = StyleSheet.create({
 });
 
 export default CollapsibleDrawer;
-

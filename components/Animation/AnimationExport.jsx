@@ -5,7 +5,7 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as MediaLibrary from 'expo-media-library';
 
-const AnimationExport: React.FC = () => {
+const AnimationExport = () => {
   const { width } = useWindowDimensions();
   const isPhone = width < 768;
 
@@ -224,4 +224,3 @@ const styles = StyleSheet.create({
 });
 
 export default AnimationExport;
-

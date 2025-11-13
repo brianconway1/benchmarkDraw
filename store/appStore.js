@@ -1,112 +1,6 @@
 import { create } from 'zustand';
-import {
-  CanvasState,
-  Player,
-  Cone,
-  GoalPost,
-  Ball,
-  Line,
-  BackgroundType,
-  PlayerTeam,
-  DrawingMode,
-  LineConfig,
-  BoxConfig,
-  AnimationFrame,
-  Animation,
-  PlayerStyle,
-  LabelType,
-  ConeColor,
-  ConeSize,
-} from '../types';
 
-interface AppStore extends CanvasState {
-  // Background
-  setBackground: (background: BackgroundType) => void;
-
-  // Players
-  addPlayer: (player: Omit<Player, 'id'>) => void;
-  updatePlayer: (id: string, updates: Partial<Player>) => void;
-  removePlayer: (id: string) => void;
-
-  // Cones
-  addCone: (cone: Omit<Cone, 'id'>) => void;
-  updateCone: (id: string, updates: Partial<Cone>) => void;
-  removeCone: (id: string) => void;
-
-  // Goal Posts
-  addGoalPost: (goalPost: Omit<GoalPost, 'id'>) => void;
-  updateGoalPost: (id: string, updates: Partial<GoalPost>) => void;
-  removeGoalPost: (id: string) => void;
-
-  // Balls
-  addBall: (ball: Omit<Ball, 'id'>) => void;
-  updateBall: (id: string, updates: Partial<Ball>) => void;
-  removeBall: (id: string) => void;
-
-  // Lines
-  addLine: (line: Omit<Line, 'id'>) => void;
-  updateLine: (id: string, updates: Partial<Line>) => void;
-  removeLine: (id: string) => void;
-
-  // Selection
-  selectItem: (id: string) => void;
-  deselectItem: (id: string) => void;
-  selectMultiple: (ids: string[]) => void;
-  clearSelection: () => void;
-  isSelected: (id: string) => boolean;
-
-  // History
-  pushHistory: () => void;
-  undo: () => void;
-  redo: () => void;
-  canUndo: () => boolean;
-  canRedo: () => boolean;
-  clearAll: () => void;
-
-  // Delete
-  deleteSelected: () => void;
-
-  // Copy/Paste
-  copiedItems: (Player | Cone | GoalPost | Ball | Line)[] | null;
-  copySelected: () => void;
-  paste: (offset?: { x: number; y: number }) => void;
-  getCopiedItems: () => (Player | Cone | GoalPost | Ball | Line)[] | null;
-
-  // Drawing config
-  lineConfig: LineConfig;
-  setLineConfig: (config: Partial<LineConfig>) => void;
-  boxConfig: BoxConfig;
-  setBoxConfig: (config: Partial<BoxConfig>) => void;
-
-  // Drop mode (multi-drop for icons)
-  dropMode: 'player' | 'cone' | 'goalpost' | 'ball' | null;
-  dropModeConfig: {
-    team?: PlayerTeam;
-    color?: string;
-    style?: PlayerStyle;
-    stripeColor?: string;
-    labelType?: LabelType;
-    label?: string;
-    nextNumber?: number;
-    coneColor?: ConeColor;
-    coneSize?: ConeSize;
-  } | null;
-  setDropMode: (mode: 'player' | 'cone' | 'goalpost' | 'ball' | null, config?: any) => void;
-  clearDropMode: () => void;
-
-  // Animations
-  animations: Animation[];
-  currentAnimation: string | null;
-  addAnimation: (animation: Animation) => void;
-  updateAnimation: (id: string, updates: Partial<Animation>) => void;
-  removeAnimation: (id: string) => void;
-  setCurrentAnimation: (id: string | null) => void;
-  addFrame: (frame: AnimationFrame) => void;
-  updateFrame: (animationId: string, frameId: string, updates: Partial<AnimationFrame>) => void;
-  removeFrame: (animationId: string, frameId: string) => void;
-}
-
-const defaultLineConfig: LineConfig = {
+const defaultLineConfig = {
   mode: 'cursor',
   color: '#2563eb',
   thickness: 4,
@@ -115,7 +9,7 @@ const defaultLineConfig: LineConfig = {
   arrowEnd: true,
 };
 
-const defaultBoxConfig: BoxConfig = {
+const defaultBoxConfig = {
   fillColor: '#2563eb',
   strokeColor: '#2563eb',
   thickness: 4,
@@ -123,7 +17,7 @@ const defaultBoxConfig: BoxConfig = {
   filled: false,
 };
 
-const initialState: CanvasState = {
+const initialState = {
   background: 'pitch_full',
   players: [],
   cones: [],
@@ -135,7 +29,7 @@ const initialState: CanvasState = {
   historyIndex: -1,
 };
 
-export const useAppStore = create<AppStore>((set, get) => ({
+export const useAppStore = create((set, get) => ({
   ...initialState,
   lineConfig: defaultLineConfig,
   boxConfig: defaultBoxConfig,
@@ -298,7 +192,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   pushHistory: () => {
     const state = get();
     const newHistory = state.history.slice(0, state.historyIndex + 1);
-    const currentState: CanvasState = {
+    const currentState = {
       background: state.background,
       players: [...state.players],
       cones: [...state.cones],
@@ -377,7 +271,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   copySelected: () => {
     const state = get();
     const selected = Array.from(state.selectedItems);
-    const items: (Player | Cone | GoalPost | Ball | Line)[] = [];
+    const items = [];
 
     state.players.forEach((p) => {
       if (selected.includes(p.id)) items.push(p);
@@ -405,18 +299,18 @@ export const useAppStore = create<AppStore>((set, get) => ({
     state.copiedItems.forEach((item) => {
       if ('x' in item && 'y' in item) {
         const newItem = { ...item, x: item.x + offset.x, y: item.y + offset.y };
-        delete (newItem as any).id;
+        delete newItem.id;
 
         if ('team' in item) {
-          get().addPlayer(newItem as Omit<Player, 'id'>);
+          get().addPlayer(newItem);
         } else if ('color' in item && 'size' in item) {
-          get().addCone(newItem as Omit<Cone, 'id'>);
+          get().addCone(newItem);
         } else if ('id' in item && item.id.startsWith('goalpost')) {
-          get().addGoalPost(newItem as Omit<GoalPost, 'id'>);
+          get().addGoalPost(newItem);
         } else if ('id' in item && item.id.startsWith('ball')) {
-          get().addBall(newItem as Omit<Ball, 'id'>);
+          get().addBall(newItem);
         } else if ('points' in item) {
-          const line = newItem as Omit<Line, 'id'>;
+          const line = newItem;
           line.points = line.points.map((p) => ({
             x: p.x + offset.x,
             y: p.y + offset.y,
@@ -516,4 +410,3 @@ export const useAppStore = create<AppStore>((set, get) => ({
     });
   },
 }));
-

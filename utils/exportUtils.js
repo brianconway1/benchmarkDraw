@@ -4,7 +4,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { View } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 
-export const captureCanvas = async (viewRef: React.RefObject<View>): Promise<string | null> => {
+export const captureCanvas = async (viewRef) => {
   try {
     if (!viewRef.current) {
       console.error('View ref is not available');
@@ -24,7 +24,7 @@ export const captureCanvas = async (viewRef: React.RefObject<View>): Promise<str
   }
 };
 
-export const saveToGallery = async (uri: string): Promise<boolean> => {
+export const saveToGallery = async (uri) => {
   try {
     const { status } = await MediaLibrary.requestPermissionsAsync();
     if (status !== 'granted') {
@@ -40,7 +40,7 @@ export const saveToGallery = async (uri: string): Promise<boolean> => {
   }
 };
 
-export const shareImage = async (uri: string): Promise<boolean> => {
+export const shareImage = async (uri) => {
   try {
     const isAvailable = await Sharing.isAvailableAsync();
     if (!isAvailable) {
@@ -57,16 +57,16 @@ export const shareImage = async (uri: string): Promise<boolean> => {
 };
 
 export const exportImage = async (
-  viewRef: React.RefObject<View>,
-  saveToGallery: boolean = false
-): Promise<{ success: boolean; uri?: string; error?: string }> => {
+  viewRef,
+  saveToGalleryFlag = false
+) => {
   try {
     const uri = await captureCanvas(viewRef);
     if (!uri) {
       return { success: false, error: 'Failed to capture canvas' };
     }
 
-    if (saveToGallery) {
+    if (saveToGalleryFlag) {
       const saved = await saveToGallery(uri);
       if (!saved) {
         return { success: false, error: 'Failed to save to gallery' };
@@ -78,4 +78,3 @@ export const exportImage = async (
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 };
-

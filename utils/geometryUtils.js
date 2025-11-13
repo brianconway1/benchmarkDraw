@@ -1,21 +1,19 @@
-import { Point } from '../types';
-
-export const pointInCircle = (point: Point, center: Point, radius: number): boolean => {
+export const pointInCircle = (point, center, radius) => {
   const distance = Math.sqrt(Math.pow(point.x - center.x, 2) + Math.pow(point.y - center.y, 2));
   return distance <= radius;
 };
 
 export const pointInRect = (
-  point: Point,
-  x: number,
-  y: number,
-  width: number,
-  height: number
-): boolean => {
+  point,
+  x,
+  y,
+  width,
+  height
+) => {
   return point.x >= x && point.x <= x + width && point.y >= y && point.y <= y + height;
 };
 
-export const getBoundingBox = (points: Point[]): { x: number; y: number; width: number; height: number } => {
+export const getBoundingBox = (points) => {
   if (points.length === 0) {
     return { x: 0, y: 0, width: 0, height: 0 };
   }
@@ -40,21 +38,21 @@ export const getBoundingBox = (points: Point[]): { x: number; y: number; width: 
   };
 };
 
-export const scalePoint = (point: Point, scaleX: number, scaleY: number, center: Point): Point => {
+export const scalePoint = (point, scaleX, scaleY, center) => {
   return {
     x: center.x + (point.x - center.x) * scaleX,
     y: center.y + (point.y - center.y) * scaleY,
   };
 };
 
-export const translatePoint = (point: Point, dx: number, dy: number): Point => {
+export const translatePoint = (point, dx, dy) => {
   return {
     x: point.x + dx,
     y: point.y + dy,
   };
 };
 
-export const rotatePoint = (point: Point, angle: number, center: Point): Point => {
+export const rotatePoint = (point, angle, center) => {
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
   const dx = point.x - center.x;
@@ -66,14 +64,14 @@ export const rotatePoint = (point: Point, angle: number, center: Point): Point =
   };
 };
 
-export const snapToGrid = (point: Point, gridSize: number): Point => {
+export const snapToGrid = (point, gridSize) => {
   return {
     x: Math.round(point.x / gridSize) * gridSize,
     y: Math.round(point.y / gridSize) * gridSize,
   };
 };
 
-export const snapToPoint = (point: Point, targetPoints: Point[], snapDistance: number = 15): Point => {
+export const snapToPoint = (point, targetPoints, snapDistance = 15) => {
   for (const target of targetPoints) {
     const distance = Math.sqrt(Math.pow(point.x - target.x, 2) + Math.pow(point.y - target.y, 2));
     if (distance <= snapDistance) {
@@ -82,4 +80,3 @@ export const snapToPoint = (point: Point, targetPoints: Point[], snapDistance: n
   }
   return point;
 };
-

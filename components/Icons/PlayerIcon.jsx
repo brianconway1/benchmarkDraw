@@ -1,14 +1,7 @@
 import React from 'react';
 import { Circle, Text as SvgText, Defs, Pattern, Rect } from 'react-native-svg';
-import { Player } from '../../types';
 
-interface PlayerIconProps {
-  player: Player;
-  size?: number;
-  selected?: boolean;
-}
-
-const PlayerIcon: React.FC<PlayerIconProps> = ({ player, size = 30, selected = false }) => {
+const PlayerIcon = ({ player, size = 30, selected = false }) => {
   const radius = size / 2;
 
   const renderPlayer = () => {
@@ -76,4 +69,3 @@ const PlayerIcon: React.FC<PlayerIconProps> = ({ player, size = 30, selected = f
 };
 
 export default PlayerIcon;
-

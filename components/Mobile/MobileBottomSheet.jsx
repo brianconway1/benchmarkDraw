@@ -7,20 +7,10 @@ import {
   Animated,
   Dimensions,
   PanResponder,
-  GestureResponderEvent,
-  GestureResponderHandlers,
 } from 'react-native';
 import { useWindowDimensions } from 'react-native';
 
-
-interface MobileBottomSheetProps {
-  visible: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-  snapPoints?: number[]; // Percentage of screen height (0.3 = 30%)
-}
-
-const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
+const MobileBottomSheet = ({
   visible,
   onClose,
   children,
@@ -52,8 +42,8 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
     }
   }, [visible, height, initialSnap]);
 
-  const handleGestureEnd = (gestureState: any) => {
-    const currentY = (translateY as any)._value + gestureState.dy;
+  const handleGestureEnd = (gestureState) => {
+    const currentY = translateY._value + gestureState.dy;
     const snapToValues = snapPoints.map((point) => height * (1 - point));
     const snapTo = snapToValues.reduce((prev, curr) => 
       (Math.abs(curr - currentY) < Math.abs(prev - currentY) ? curr : prev)
@@ -83,13 +73,13 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
     onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dy) > 5,
     onPanResponderGrant: () => {
       panY.setValue(0);
-      (translateY as any).setOffset((translateY as any)._value);
+      translateY.setOffset(translateY._value);
     },
     onPanResponderMove: (_, gestureState) => {
       panY.setValue(gestureState.dy);
     },
     onPanResponderRelease: (_, gestureState) => {
-      (translateY as any).flattenOffset();
+      translateY.flattenOffset();
       handleGestureEnd(gestureState);
     },
   });
@@ -115,7 +105,7 @@ const MobileBottomSheet: React.FC<MobileBottomSheetProps> = ({
               ],
             },
           ]}
-          {...(panResponder.panHandlers as any)}
+          {...panResponder.panHandlers}
         >
           {/* Drag Handle */}
           <View style={styles.dragHandle} />
@@ -160,4 +150,3 @@ const styles = StyleSheet.create({
 });
 
 export default MobileBottomSheet;
-

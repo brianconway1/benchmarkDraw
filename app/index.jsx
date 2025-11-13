@@ -7,9 +7,7 @@ import LeftPanel from '../components/Panels/LeftPanel';
 import RightPanel from '../components/Panels/RightPanel';
 import BottomPanel from '../components/Panels/BottomPanel';
 import Toolbar from '../components/Tools/Toolbar';
-import AnimationPanel from '../components/Animation/AnimationPanel';
-import AnimationExport from '../components/Animation/AnimationExport';
-import MobileTabNavigation, { TabType } from '../components/Mobile/MobileTabNavigation';
+import MobileTabNavigation from '../components/Mobile/MobileTabNavigation';
 import MobileBottomSheet from '../components/Mobile/MobileBottomSheet';
 
 export default function HomeScreen() {
@@ -22,8 +20,8 @@ export default function HomeScreen() {
   const isTablet = minDimension >= 768 || (Platform.OS === 'ios' && minDimension >= 600); // iPad mini is 768, but some might be 600+
   
   const isPhone = !isTablet;
-  const canvasRef = useRef<any>(null);
-  const [activeMobileTab, setActiveMobileTab] = useState<TabType | null>(null);
+  const canvasRef = useRef(null);
+  const [activeMobileTab, setActiveMobileTab] = useState(null);
   const [bottomSheetVisible, setBottomSheetVisible] = useState(false);
   
   // Reset bottom sheet on orientation change
@@ -32,7 +30,7 @@ export default function HomeScreen() {
     setActiveMobileTab(null);
   }, [isLandscape]);
 
-  const handleTabChange = (tab: TabType) => {
+  const handleTabChange = (tab) => {
     if (activeMobileTab === tab && bottomSheetVisible) {
       // Close if same tab is tapped again
       setBottomSheetVisible(false);
@@ -41,11 +39,15 @@ export default function HomeScreen() {
       setActiveMobileTab(tab);
       setBottomSheetVisible(true);
     }
+    // Clear drop mode when a new tab is selected
+    useAppStore.getState().clearDropMode();
   };
 
   const handleCloseBottomSheet = () => {
     setBottomSheetVisible(false);
     setActiveMobileTab(null);
+    // Clear drop mode when bottom sheet is closed
+    useAppStore.getState().clearDropMode();
   };
 
   const renderMobilePanelContent = () => {
@@ -88,17 +90,15 @@ export default function HomeScreen() {
   // Calculate canvas height accounting for orientation and device type
   const getCanvasHeight = () => {
     if (isTablet) {
-      // Tablet: account for header, toolbar, and bottom panel
-      const headerHeight = 60;
+      // Tablet: account for toolbar and bottom panel (no header)
       const toolbarHeight = isLandscape ? 40 : 50;
       const bottomPanelHeight = isLandscape ? 60 : 80;
-      return height - headerHeight - toolbarHeight - bottomPanelHeight;
+      return height - toolbarHeight - bottomPanelHeight;
     }
-    // Mobile: Header + Toolbar + Tab Navigation
-    const headerHeight = 60;
+    // Mobile: Toolbar + Tab Navigation (no header)
     const toolbarHeight = isLandscape ? 35 : 45;
     const tabNavHeight = isLandscape ? 40 : 50;
-    return height - headerHeight - toolbarHeight - tabNavHeight;
+    return height - toolbarHeight - tabNavHeight;
   };
 
   // Adjust canvas width for landscape
@@ -125,14 +125,7 @@ export default function HomeScreen() {
       <ExpoStatusBar style="light" />
       <StatusBar barStyle="light-content" />
       
-      {/* Header with Logo */}
-      <TouchableWithoutFeedback onPress={handleOutsideCanvasTap}>
-        <View style={styles.header}>
-          {/* Logo would go here */}
-        </View>
-      </TouchableWithoutFeedback>
-
-      {/* Toolbar */}
+      {/* Toolbar - At top of screen */}
       <TouchableWithoutFeedback onPress={handleOutsideCanvasTap}>
         <View>
           <Toolbar canvasRef={canvasRef} />
@@ -154,7 +147,8 @@ export default function HomeScreen() {
         <View style={styles.canvasContainer}>
           <DrawingCanvas 
             width={getCanvasWidth()} 
-            height={getCanvasHeight()} 
+            height={getCanvasHeight()}
+            isLandscape={isLandscape}
           />
         </View>
 
@@ -199,14 +193,6 @@ export default function HomeScreen() {
           {bottomSheetVisible && activeMobileTab && renderMobilePanelContent()}
         </MobileBottomSheet>
       )}
-
-      {/* Animation Panel (Tablet only - Optional - can be toggled) */}
-      {isTablet && (
-        <View style={styles.animationPanel}>
-          <AnimationPanel />
-          <AnimationExport />
-        </View>
-      )}
     </SafeAreaView>
   );
 }
@@ -215,14 +201,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000000',
-  },
-  header: {
-    height: 60,
-    backgroundColor: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: '#FFFFFF',
   },
   content: {
     flex: 1,
@@ -236,6 +214,8 @@ const styles = StyleSheet.create({
   canvasContainer: {
     flex: 1,
     backgroundColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   rightPanel: {
     width: 120,
@@ -257,12 +237,4 @@ const styles = StyleSheet.create({
   mobileToolsContainer: {
     paddingVertical: 8,
   },
-  animationPanel: {
-    position: 'absolute',
-    top: 120,
-    right: 120,
-    width: 200,
-    zIndex: 5,
-  },
 });
-

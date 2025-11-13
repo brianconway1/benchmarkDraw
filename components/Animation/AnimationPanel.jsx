@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Modal, ScrollView, TextInput } from 'react-native';
 import { useAppStore } from '../../store/appStore';
-import { Animation, AnimationFrame } from '../../types';
 
-const AnimationPanel: React.FC = () => {
+const AnimationPanel = () => {
   const { width } = useWindowDimensions();
   const isPhone = width < 768;
 
@@ -18,7 +17,7 @@ const AnimationPanel: React.FC = () => {
 
   const handleCreateAnimation = () => {
     if (newAnimationName.trim()) {
-      const animation: Animation = {
+      const animation = {
         id: `animation-${Date.now()}`,
         name: newAnimationName,
         frames: [],
@@ -36,7 +35,7 @@ const AnimationPanel: React.FC = () => {
       const currentState = useAppStore.getState();
       const anim = currentState.animations.find((a) => a.id === currentAnimation);
       const frameNumber = anim ? anim.frames.length + 1 : 1;
-      const frame: AnimationFrame = {
+      const frame = {
         id: `frame-${Date.now()}`,
         name: `Frame ${frameNumber}`,
         state: {
@@ -285,4 +284,3 @@ const styles = StyleSheet.create({
 });
 
 export default AnimationPanel;
-

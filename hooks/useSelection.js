@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { Point } from '../types';
 import { useAppStore } from '../store/appStore';
 import { pointInCircle, pointInRect } from '../utils/geometryUtils';
 import { pointInLine } from '../utils/drawingUtils';
@@ -9,7 +8,7 @@ export const useSelection = () => {
     useAppStore();
 
   const findItemAtPoint = useCallback(
-    (point: Point, tolerance: number = 10): string | null => {
+    (point, tolerance = 10) => {
       // Check lines first (they're on top)
       for (const line of lines) {
         if (pointInLine(point, line, tolerance)) {
@@ -46,7 +45,7 @@ export const useSelection = () => {
   );
 
   const handleTap = useCallback(
-    (point: Point, multiSelect: boolean = false) => {
+    (point, multiSelect = false) => {
       const itemId = findItemAtPoint(point);
       if (itemId) {
         if (multiSelect) {
@@ -76,4 +75,3 @@ export const useSelection = () => {
     isSelected,
   };
 };
-

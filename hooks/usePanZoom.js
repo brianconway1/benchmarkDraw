@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { PanZoomState, Point } from '../types';
 import { Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -9,13 +8,13 @@ const MAX_SCALE = 3.0;
 const DEFAULT_SCALE = 1.0;
 
 export const usePanZoom = () => {
-  const [panZoom, setPanZoom] = useState<PanZoomState>({
+  const [panZoom, setPanZoom] = useState({
     scale: DEFAULT_SCALE,
     translateX: 0,
     translateY: 0,
   });
 
-  const handlePan = useCallback((dx: number, dy: number) => {
+  const handlePan = useCallback((dx, dy) => {
     setPanZoom((prev) => ({
       ...prev,
       translateX: prev.translateX + dx / prev.scale,
@@ -23,7 +22,7 @@ export const usePanZoom = () => {
     }));
   }, []);
 
-  const handleZoom = useCallback((scale: number, focalPoint?: Point) => {
+  const handleZoom = useCallback((scale, focalPoint) => {
     setPanZoom((prev) => {
       const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale));
       if (!focalPoint) {
@@ -52,7 +51,7 @@ export const usePanZoom = () => {
   }, []);
 
   const screenToCanvas = useCallback(
-    (screenPoint: Point): Point => {
+    (screenPoint) => {
       // Simple conversion - can be enhanced with pan/zoom later
       return {
         x: screenPoint.x,
@@ -63,7 +62,7 @@ export const usePanZoom = () => {
   );
 
   const canvasToScreen = useCallback(
-    (canvasPoint: Point): Point => {
+    (canvasPoint) => {
       return {
         x: (canvasPoint.x + panZoom.translateX) * panZoom.scale,
         y: (canvasPoint.y + panZoom.translateY) * panZoom.scale,
@@ -81,4 +80,3 @@ export const usePanZoom = () => {
     canvasToScreen,
   };
 };
-

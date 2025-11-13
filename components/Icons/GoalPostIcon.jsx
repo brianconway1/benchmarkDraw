@@ -1,13 +1,7 @@
 import React from 'react';
 import { Line, Rect } from 'react-native-svg';
-import { GoalPost } from '../../types';
 
-interface GoalPostIconProps {
-  goalPost: GoalPost;
-  selected?: boolean;
-}
-
-const GoalPostIcon: React.FC<GoalPostIconProps> = ({ goalPost, selected = false }) => {
+const GoalPostIcon = ({ goalPost, selected = false }) => {
   const width = goalPost.width || 30;
   const height = goalPost.height || 40;
   const postWidth = 3;
@@ -81,4 +75,3 @@ const GoalPostIcon: React.FC<GoalPostIconProps> = ({ goalPost, selected = false 
 };
 
 export default GoalPostIcon;
-

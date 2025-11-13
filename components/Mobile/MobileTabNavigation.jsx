@@ -1,19 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
 
-export type TabType = 'background' | 'icons' | 'drawing';
-
-interface MobileTabNavigationProps {
-  activeTab: TabType | null;
-  onTabChange: (tab: TabType) => void;
-}
-
-const MobileTabNavigation: React.FC<MobileTabNavigationProps> = ({ activeTab, onTabChange }) => {
+const MobileTabNavigation = ({ activeTab, onTabChange }) => {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   const isSmallPhone = Math.min(width, height) < 375;
 
-  const tabs: { id: TabType; label: string; icon: string }[] = [
+  const tabs = [
     { id: 'background', label: 'Background', icon: '🎨' },
     { id: 'icons', label: 'Icons', icon: '👥' },
     { id: 'drawing', label: 'Draw', icon: '✏️' },
@@ -108,4 +101,5 @@ const styles = StyleSheet.create({
 });
 
 export default MobileTabNavigation;
+export { MobileTabNavigation };
 

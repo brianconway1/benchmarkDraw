@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { Point, Line, DrawingMode, LineConfig, BoxConfig } from '../types';
 import {
   createStraightLine,
   createCurveLine,
@@ -8,20 +7,20 @@ import {
 } from '../utils/drawingUtils';
 
 export const useDrawing = (
-  mode: DrawingMode,
-  lineConfig: LineConfig,
-  boxConfig: BoxConfig,
-  onLineComplete: (line: Omit<Line, 'id'>) => void
+  mode,
+  lineConfig,
+  boxConfig,
+  onLineComplete
 ) => {
   const [isDrawing, setIsDrawing] = useState(false);
-  const [currentLine, setCurrentLine] = useState<Omit<Line, 'id'> | null>(null);
-  const [startPoint, setStartPoint] = useState<Point | null>(null);
-  const [currentPoint, setCurrentPoint] = useState<Point | null>(null);
-  const [controlPoint, setControlPoint] = useState<Point | null>(null);
-  const [freeDrawPoints, setFreeDrawPoints] = useState<Point[]>([]);
+  const [currentLine, setCurrentLine] = useState(null);
+  const [startPoint, setStartPoint] = useState(null);
+  const [currentPoint, setCurrentPoint] = useState(null);
+  const [controlPoint, setControlPoint] = useState(null);
+  const [freeDrawPoints, setFreeDrawPoints] = useState([]);
 
   const startDrawing = useCallback(
-    (point: Point) => {
+    (point) => {
       if (mode === 'cursor') return;
 
       setIsDrawing(true);
@@ -42,7 +41,7 @@ export const useDrawing = (
   );
 
   const updateDrawing = useCallback(
-    (point: Point) => {
+    (point) => {
       if (!isDrawing || !startPoint) return;
 
       setCurrentPoint(point);
@@ -98,4 +97,3 @@ export const useDrawing = (
     cancelDrawing,
   };
 };
-

@@ -1,14 +1,12 @@
-import { Point, Line } from '../types';
-
-export const calculateDistance = (p1: Point, p2: Point): number => {
+export const calculateDistance = (p1, p2) => {
   return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
 };
 
-export const calculateAngle = (p1: Point, p2: Point): number => {
+export const calculateAngle = (p1, p2) => {
   return Math.atan2(p2.y - p1.y, p2.x - p1.x);
 };
 
-export const getLineBounds = (line: Line): { x: number; y: number; width: number; height: number } => {
+export const getLineBounds = (line) => {
   if (line.points.length === 0) {
     return { x: 0, y: 0, width: 0, height: 0 };
   }
@@ -33,7 +31,7 @@ export const getLineBounds = (line: Line): { x: number; y: number; width: number
   };
 };
 
-export const pointInLine = (point: Point, line: Line, tolerance: number = 5): boolean => {
+export const pointInLine = (point, line, tolerance = 5) => {
   if (line.type === 'straight' && line.points.length >= 2) {
     const p1 = line.points[0];
     const p2 = line.points[line.points.length - 1];
@@ -74,7 +72,7 @@ export const pointInLine = (point: Point, line: Line, tolerance: number = 5): bo
   return false;
 };
 
-const distanceToLineSegment = (point: Point, lineStart: Point, lineEnd: Point): number => {
+const distanceToLineSegment = (point, lineStart, lineEnd) => {
   const A = point.x - lineStart.x;
   const B = point.y - lineStart.y;
   const C = lineEnd.x - lineStart.x;
@@ -85,7 +83,7 @@ const distanceToLineSegment = (point: Point, lineStart: Point, lineEnd: Point): 
   let param = -1;
   if (lenSq !== 0) param = dot / lenSq;
 
-  let xx: number, yy: number;
+  let xx, yy;
 
   if (param < 0) {
     xx = lineStart.x;
@@ -103,7 +101,7 @@ const distanceToLineSegment = (point: Point, lineStart: Point, lineEnd: Point): 
   return Math.sqrt(dx * dx + dy * dy);
 };
 
-const quadraticBezierPoint = (p0: Point, p1: Point, p2: Point, t: number): Point => {
+const quadraticBezierPoint = (p0, p1, p2, t) => {
   const mt = 1 - t;
   return {
     x: mt * mt * p0.x + 2 * mt * t * p1.x + t * t * p2.x,
@@ -111,7 +109,7 @@ const quadraticBezierPoint = (p0: Point, p1: Point, p2: Point, t: number): Point
   };
 };
 
-export const createStraightLine = (start: Point, end: Point, config: any): Omit<Line, 'id'> => {
+export const createStraightLine = (start, end, config) => {
   return {
     type: 'straight',
     points: [start, end],
@@ -123,7 +121,7 @@ export const createStraightLine = (start: Point, end: Point, config: any): Omit<
   };
 };
 
-export const createCurveLine = (start: Point, control: Point, end: Point, config: any): Omit<Line, 'id'> => {
+export const createCurveLine = (start, control, end, config) => {
   return {
     type: 'curve',
     points: [start, end],
@@ -136,7 +134,7 @@ export const createCurveLine = (start: Point, control: Point, end: Point, config
   };
 };
 
-export const createFreeLine = (points: Point[], config: any): Omit<Line, 'id'> => {
+export const createFreeLine = (points, config) => {
   return {
     type: 'free',
     points,
@@ -148,7 +146,7 @@ export const createFreeLine = (points: Point[], config: any): Omit<Line, 'id'> =
   };
 };
 
-export const createRectangle = (start: Point, end: Point, config: any): Omit<Line, 'id'> => {
+export const createRectangle = (start, end, config) => {
   const minX = Math.min(start.x, end.x);
   const minY = Math.min(start.y, end.y);
   const maxX = Math.max(start.x, end.x);
@@ -173,11 +171,11 @@ export const createRectangle = (start: Point, end: Point, config: any): Omit<Lin
 };
 
 export const getArrowPoints = (
-  start: Point,
-  end: Point,
-  arrowLength: number = 15,
-  arrowWidth: number = 8
-): string => {
+  start,
+  end,
+  arrowLength = 15,
+  arrowWidth = 8
+) => {
   const angle = calculateAngle(start, end);
   const arrowAngle1 = angle + Math.PI - Math.PI / 6;
   const arrowAngle2 = angle + Math.PI + Math.PI / 6;
@@ -191,4 +189,3 @@ export const getArrowPoints = (
 
   return `${x1},${y1} ${x2},${y2} ${x3},${y3}`;
 };
-
