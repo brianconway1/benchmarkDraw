@@ -84,8 +84,11 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
       const { locationX, locationY } = event.nativeEvent;
       const canvasPoint = convertScreenToCanvas({ x: locationX, y: locationY });
 
+      console.log('Touch event:', { locationX, locationY, canvasPoint, dropMode, dropModeConfig });
+
       // Handle drop mode first (multi-drop icons)
       if (dropMode && dropModeConfig) {
+        console.log('Adding item in drop mode:', dropMode, 'at', canvasPoint);
         switch (dropMode) {
           case 'player': {
             const { team, color, style, stripeColor, labelType, label, nextNumber } = dropModeConfig;
@@ -345,6 +348,18 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
     return null;
   };
 
+
+  // Debug: Log drop mode state
+  React.useEffect(() => {
+    if (dropMode) {
+      console.log('Drop mode active:', dropMode, dropModeConfig);
+    }
+  }, [dropMode, dropModeConfig]);
+
+  // Debug: Log players count
+  React.useEffect(() => {
+    console.log('Players count:', players.length, 'Cones:', cones.length, 'Goals:', goalPosts.length, 'Balls:', balls.length);
+  }, [players.length, cones.length, goalPosts.length, balls.length]);
 
   return (
     <View style={[styles.container, { width, height }]} {...panResponder.panHandlers}>

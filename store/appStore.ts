@@ -152,8 +152,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   addPlayer: (player) => {
     const id = `player-${Date.now()}-${Math.random()}`;
+    const newPlayer = { ...player, id };
+    console.log('Adding player:', newPlayer);
     set((state) => ({
-      players: [...state.players, { ...player, id }],
+      players: [...state.players, newPlayer],
     }));
     get().pushHistory();
   },
@@ -173,8 +175,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   addCone: (cone) => {
     const id = `cone-${Date.now()}-${Math.random()}`;
+    const newCone = { ...cone, id };
+    console.log('Adding cone:', newCone);
     set((state) => ({
-      cones: [...state.cones, { ...cone, id }],
+      cones: [...state.cones, newCone],
     }));
     get().pushHistory();
   },
@@ -194,8 +198,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   addGoalPost: (goalPost) => {
     const id = `goalpost-${Date.now()}-${Math.random()}`;
+    const newGoalPost = { ...goalPost, id };
+    console.log('Adding goal post:', newGoalPost);
     set((state) => ({
-      goalPosts: [...state.goalPosts, { ...goalPost, id }],
+      goalPosts: [...state.goalPosts, newGoalPost],
     }));
     get().pushHistory();
   },
@@ -215,8 +221,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   addBall: (ball) => {
     const id = `ball-${Date.now()}-${Math.random()}`;
+    const newBall = { ...ball, id };
+    console.log('Adding ball:', newBall);
     set((state) => ({
-      balls: [...state.balls, { ...ball, id }],
+      balls: [...state.balls, newBall],
     }));
     get().pushHistory();
   },
@@ -494,6 +502,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   setDropMode: (mode, config) => {
+    console.log('Setting drop mode:', mode, config);
     set({
       dropMode: mode,
       dropModeConfig: config || null,
