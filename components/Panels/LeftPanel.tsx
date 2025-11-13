@@ -3,7 +3,11 @@ import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'r
 import { useAppStore } from '../../store/appStore';
 import { BackgroundType } from '../../types';
 
-const LeftPanel: React.FC = () => {
+interface LeftPanelProps {
+  onBackgroundSelected?: () => void; // Callback when background is selected (to close bottom sheet on mobile)
+}
+
+const LeftPanel: React.FC<LeftPanelProps> = ({ onBackgroundSelected }) => {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   const minDimension = Math.min(width, height);
@@ -47,7 +51,13 @@ const LeftPanel: React.FC = () => {
             background === bg.type && styles.buttonActive,
             isPhone && styles.buttonPhone,
           ]}
-          onPress={() => setBackground(bg.type)}
+          onPress={() => {
+            setBackground(bg.type);
+            // Close bottom sheet on mobile after selecting background
+            if (isPhone && onBackgroundSelected) {
+              onBackgroundSelected();
+            }
+          }}
         >
           <Text
             style={[

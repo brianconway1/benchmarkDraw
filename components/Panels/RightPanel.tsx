@@ -8,9 +8,10 @@ const ICON_SIZE = 30;
 
 interface RightPanelProps {
   onIconDragStart?: (type: string, team?: PlayerTeam) => void;
+  onItemAdded?: () => void; // Callback when an item is added (to close bottom sheet on mobile)
 }
 
-const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart }) => {
+const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded }) => {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   const minDimension = Math.min(width, height);
@@ -89,6 +90,9 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart }) => {
       labelType,
       label,
     });
+    
+    // Close bottom sheet on mobile after adding item
+    onItemAdded?.();
   };
 
   const handleAddCone = () => {
@@ -98,6 +102,9 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart }) => {
       color: coneColor,
       size: coneSize,
     });
+    
+    // Close bottom sheet on mobile after adding item
+    onItemAdded?.();
   };
 
   const handleAddGoalPost = () => {
@@ -105,6 +112,9 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart }) => {
       x: 400,
       y: 300,
     });
+    
+    // Close bottom sheet on mobile after adding item
+    onItemAdded?.();
   };
 
   const handleAddBall = () => {
@@ -112,6 +122,9 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart }) => {
       x: 400,
       y: 300,
     });
+    
+    // Close bottom sheet on mobile after adding item
+    onItemAdded?.();
   };
 
   const renderPlayerIcon = (color: string, style: PlayerStyle, stripeColor: string, label: string) => {

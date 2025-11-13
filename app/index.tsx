@@ -56,7 +56,7 @@ export default function HomeScreen() {
             contentContainerStyle={styles.mobilePanelScrollContent}
             showsVerticalScrollIndicator={true}
           >
-            <LeftPanel />
+            <LeftPanel onBackgroundSelected={handleCloseBottomSheet} />
           </ScrollView>
         );
       case 'icons':
@@ -66,7 +66,7 @@ export default function HomeScreen() {
             contentContainerStyle={styles.mobilePanelScrollContent}
             showsVerticalScrollIndicator={true}
           >
-            <RightPanel />
+            <RightPanel onItemAdded={handleCloseBottomSheet} />
           </ScrollView>
         );
       case 'drawing':
