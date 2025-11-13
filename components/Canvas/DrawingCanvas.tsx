@@ -84,12 +84,20 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
       const { locationX, locationY } = event.nativeEvent;
       const canvasPoint = convertScreenToCanvas({ x: locationX, y: locationY });
 
-      console.log('Touch event:', { locationX, locationY, canvasPoint, dropMode, dropModeConfig });
-
       // Handle drop mode first (multi-drop icons)
       // Get latest drop mode from store to ensure we have current values
       const currentDropMode = useAppStore.getState().dropMode;
       const currentDropModeConfig = useAppStore.getState().dropModeConfig;
+      
+      console.log('Touch event:', { 
+        locationX, 
+        locationY, 
+        canvasPoint, 
+        closureDropMode: dropMode, 
+        closureDropModeConfig: dropModeConfig,
+        currentDropMode,
+        currentDropModeConfig 
+      });
       
       if (currentDropMode && currentDropModeConfig) {
         console.log('Adding item in drop mode:', currentDropMode, 'at', canvasPoint);
