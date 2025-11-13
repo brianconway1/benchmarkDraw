@@ -6,9 +6,11 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "env": {
+        "npm_config_legacy_peer_deps": "true"
+      },
       "ios": {
-        "simulator": true,
-        "usesNonExemptEncryption": false
+        "simulator": true
       },
       "android": {
         "buildType": "apk"
@@ -16,15 +18,19 @@
     },
     "preview": {
       "distribution": "internal",
+      "env": {
+        "npm_config_legacy_peer_deps": "true"
+      },
       "ios": {
-        "simulator": false,
-        "usesNonExemptEncryption": false
+        "simulator": false
       }
     },
     "production": {
+      "env": {
+        "npm_config_legacy_peer_deps": "true"
+      },
       "ios": {
-        "simulator": false,
-        "usesNonExemptEncryption": false
+        "simulator": false
       }
     }
   },
