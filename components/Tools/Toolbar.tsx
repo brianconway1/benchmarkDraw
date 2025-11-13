@@ -6,11 +6,13 @@ import { exportImage } from '../../utils/exportUtils';
 
 interface ToolbarProps {
   canvasRef: React.RefObject<any>;
+  compact?: boolean;
 }
 
-const Toolbar: React.FC<ToolbarProps> = ({ canvasRef }) => {
+const Toolbar: React.FC<ToolbarProps> = ({ canvasRef, compact = false }) => {
   const { width } = useWindowDimensions();
   const isPhone = width < 768;
+  const isSmallPhone = width < 375;
   const { undo, redo, canUndo, canRedo } = useHistory();
   const deleteSelected = useAppStore((state) => state.deleteSelected);
   const clearAll = useAppStore((state) => state.clearAll);
@@ -48,13 +50,13 @@ const Toolbar: React.FC<ToolbarProps> = ({ canvasRef }) => {
     <View
       style={[
         styles.container,
-        isPhone
+        isPhone || compact
           ? {
               flexDirection: 'row',
               flexWrap: 'wrap',
               justifyContent: 'center',
-              paddingVertical: 8,
-              paddingHorizontal: 4,
+              paddingVertical: isSmallPhone || compact ? 4 : 8,
+              paddingHorizontal: isSmallPhone || compact ? 2 : 4,
             }
           : {
               flexDirection: 'row',
@@ -65,47 +67,78 @@ const Toolbar: React.FC<ToolbarProps> = ({ canvasRef }) => {
       ]}
     >
       <TouchableOpacity
-        style={[styles.button, !canUndo && styles.buttonDisabled]}
+        style={[
+          styles.button,
+          !canUndo && styles.buttonDisabled,
+          compact && styles.buttonCompact,
+        ]}
         onPress={undo}
         disabled={!canUndo}
       >
-        <Text style={styles.buttonText}>Undo</Text>
+        <Text style={[styles.buttonText, compact && styles.buttonTextCompact]}>
+          {compact ? '↶' : 'Undo'}
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.button, !canRedo && styles.buttonDisabled]}
+        style={[
+          styles.button,
+          !canRedo && styles.buttonDisabled,
+          compact && styles.buttonCompact,
+        ]}
         onPress={redo}
         disabled={!canRedo}
       >
-        <Text style={styles.buttonText}>Redo</Text>
+        <Text style={[styles.buttonText, compact && styles.buttonTextCompact]}>
+          {compact ? '↷' : 'Redo'}
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.button, selectedItems.size === 0 && styles.buttonDisabled]}
+        style={[
+          styles.button,
+          selectedItems.size === 0 && styles.buttonDisabled,
+          compact && styles.buttonCompact,
+        ]}
         onPress={handleCopy}
         disabled={selectedItems.size === 0}
       >
-        <Text style={styles.buttonText}>Copy</Text>
+        <Text style={[styles.buttonText, compact && styles.buttonTextCompact]}>
+          {compact ? '📋' : 'Copy'}
+        </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={handlePaste}>
-        <Text style={styles.buttonText}>Paste</Text>
+      <TouchableOpacity style={[styles.button, compact && styles.buttonCompact]} onPress={handlePaste}>
+        <Text style={[styles.buttonText, compact && styles.buttonTextCompact]}>
+          {compact ? '📄' : 'Paste'}
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.button, styles.buttonDanger, selectedItems.size === 0 && styles.buttonDisabled]}
+        style={[
+          styles.button,
+          styles.buttonDanger,
+          selectedItems.size === 0 && styles.buttonDisabled,
+          compact && styles.buttonCompact,
+        ]}
         onPress={handleDelete}
         disabled={selectedItems.size === 0}
       >
-        <Text style={[styles.buttonText, styles.buttonTextDanger]}>Delete</Text>
+        <Text style={[styles.buttonText, styles.buttonTextDanger, compact && styles.buttonTextCompact]}>
+          {compact ? '🗑' : 'Delete'}
+        </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.button, styles.buttonDanger]} onPress={clearAll}>
-        <Text style={[styles.buttonText, styles.buttonTextDanger]}>Clear All</Text>
+      <TouchableOpacity style={[styles.button, styles.buttonDanger, compact && styles.buttonCompact]} onPress={clearAll}>
+        <Text style={[styles.buttonText, styles.buttonTextDanger, compact && styles.buttonTextCompact]}>
+          {compact ? '✕' : 'Clear All'}
+        </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.button, styles.buttonPrimary]} onPress={handleScreenshot}>
-        <Text style={[styles.buttonText, styles.buttonTextPrimary]}>Screenshot</Text>
+      <TouchableOpacity style={[styles.button, styles.buttonPrimary, compact && styles.buttonCompact]} onPress={handleScreenshot}>
+        <Text style={[styles.buttonText, styles.buttonTextPrimary, compact && styles.buttonTextCompact]}>
+          {compact ? '📸' : 'Screenshot'}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -134,6 +167,14 @@ const styles = StyleSheet.create({
     minWidth: 80,
     alignItems: 'center',
   },
+  buttonCompact: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    marginHorizontal: 2,
+    marginVertical: 2,
+    minWidth: 44,
+    minHeight: 44,
+  },
   buttonDisabled: {
     opacity: 0.5,
   },
@@ -155,6 +196,9 @@ const styles = StyleSheet.create({
   },
   buttonTextPrimary: {
     color: '#FFFFFF',
+  },
+  buttonTextCompact: {
+    fontSize: 18,
   },
 });
 
