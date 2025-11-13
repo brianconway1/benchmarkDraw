@@ -79,18 +79,6 @@ export default function HomeScreen() {
             <BottomPanel />
           </ScrollView>
         );
-      case 'tools':
-        return (
-          <ScrollView 
-            style={styles.mobilePanelScroll}
-            contentContainerStyle={styles.mobilePanelScrollContent}
-            showsVerticalScrollIndicator={true}
-          >
-            <View style={styles.mobileToolsContainer}>
-              <Toolbar canvasRef={canvasRef} compact />
-            </View>
-          </ScrollView>
-        );
       default:
         return null;
     }

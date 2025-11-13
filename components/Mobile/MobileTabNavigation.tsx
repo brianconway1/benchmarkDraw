@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
 
-export type TabType = 'background' | 'icons' | 'drawing' | 'tools';
+export type TabType = 'background' | 'icons' | 'drawing';
 
 interface MobileTabNavigationProps {
   activeTab: TabType | null;
@@ -17,7 +17,6 @@ const MobileTabNavigation: React.FC<MobileTabNavigationProps> = ({ activeTab, on
     { id: 'background', label: 'Background', icon: '🎨' },
     { id: 'icons', label: 'Icons', icon: '👥' },
     { id: 'drawing', label: 'Draw', icon: '✏️' },
-    { id: 'tools', label: 'Tools', icon: '🛠️' },
   ];
 
   return (
