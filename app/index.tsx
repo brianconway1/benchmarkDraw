@@ -24,6 +24,12 @@ export default function HomeScreen() {
   const canvasRef = useRef<any>(null);
   const [activeMobileTab, setActiveMobileTab] = useState<TabType | null>(null);
   const [bottomSheetVisible, setBottomSheetVisible] = useState(false);
+  
+  // Reset bottom sheet on orientation change
+  React.useEffect(() => {
+    setBottomSheetVisible(false);
+    setActiveMobileTab(null);
+  }, [isLandscape]);
 
   const handleTabChange = (tab: TabType) => {
     if (activeMobileTab === tab && bottomSheetVisible) {
@@ -159,21 +165,23 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Mobile Tab Navigation */}
+      {/* Mobile Tab Navigation - Always visible on mobile, but no tab should be active by default */}
       {isPhone && (
-        <>
-          <MobileTabNavigation activeTab={activeMobileTab || 'background'} onTabChange={handleTabChange} />
-          
-          {/* Bottom Sheet Modal for Mobile Panels */}
-          {/* Adjust snap points for landscape - make them smaller since we have less vertical space */}
-          <MobileBottomSheet
-            visible={bottomSheetVisible}
-            onClose={handleCloseBottomSheet}
-            snapPoints={isLandscape ? [0.4, 0.6, 0.8] : [0.5, 0.75, 0.9]}
-          >
-            {renderMobilePanelContent()}
-          </MobileBottomSheet>
-        </>
+        <MobileTabNavigation 
+          activeTab={bottomSheetVisible && activeMobileTab ? activeMobileTab : null} 
+          onTabChange={handleTabChange} 
+        />
+      )}
+      
+      {/* Bottom Sheet Modal for Mobile Panels - Only visible when a tab is selected */}
+      {isPhone && (
+        <MobileBottomSheet
+          visible={bottomSheetVisible}
+          onClose={handleCloseBottomSheet}
+          snapPoints={isLandscape ? [0.4, 0.6, 0.8] : [0.5, 0.75, 0.9]}
+        >
+          {bottomSheetVisible && activeMobileTab && renderMobilePanelContent()}
+        </MobileBottomSheet>
       )}
 
       {/* Animation Panel (Tablet only - Optional - can be toggled) */}

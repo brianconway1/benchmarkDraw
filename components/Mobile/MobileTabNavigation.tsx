@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from 'r
 export type TabType = 'background' | 'icons' | 'drawing' | 'tools';
 
 interface MobileTabNavigationProps {
-  activeTab: TabType;
+  activeTab: TabType | null;
   onTabChange: (tab: TabType) => void;
 }
 
