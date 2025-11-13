@@ -21,6 +21,15 @@ const Toolbar: React.FC<ToolbarProps> = ({ canvasRef, compact = false }) => {
   const copySelected = useAppStore((state) => state.copySelected);
   const paste = useAppStore((state) => state.paste);
   const selectedItems = useAppStore((state) => state.selectedItems);
+  const clearDropMode = useAppStore((state) => state.clearDropMode);
+
+  // Clear drop mode when any toolbar button is clicked
+  const clearDropModeIfActive = () => {
+    const store = useAppStore.getState();
+    if (store.dropMode) {
+      clearDropMode();
+    }
+  };
 
   const handleScreenshot = async () => {
     if (canvasRef.current) {
@@ -74,7 +83,10 @@ const Toolbar: React.FC<ToolbarProps> = ({ canvasRef, compact = false }) => {
           !canUndo && styles.buttonDisabled,
           compact && styles.buttonCompact,
         ]}
-        onPress={undo}
+        onPress={() => {
+          clearDropModeIfActive();
+          undo();
+        }}
         disabled={!canUndo}
       >
         <Text style={[styles.buttonText, compact && styles.buttonTextCompact]}>
@@ -88,7 +100,10 @@ const Toolbar: React.FC<ToolbarProps> = ({ canvasRef, compact = false }) => {
           !canRedo && styles.buttonDisabled,
           compact && styles.buttonCompact,
         ]}
-        onPress={redo}
+        onPress={() => {
+          clearDropModeIfActive();
+          redo();
+        }}
         disabled={!canRedo}
       >
         <Text style={[styles.buttonText, compact && styles.buttonTextCompact]}>
@@ -102,7 +117,10 @@ const Toolbar: React.FC<ToolbarProps> = ({ canvasRef, compact = false }) => {
           selectedItems.size === 0 && styles.buttonDisabled,
           compact && styles.buttonCompact,
         ]}
-        onPress={handleCopy}
+        onPress={() => {
+          clearDropModeIfActive();
+          handleCopy();
+        }}
         disabled={selectedItems.size === 0}
       >
         <Text style={[styles.buttonText, compact && styles.buttonTextCompact]}>
@@ -110,7 +128,13 @@ const Toolbar: React.FC<ToolbarProps> = ({ canvasRef, compact = false }) => {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.button, compact && styles.buttonCompact]} onPress={handlePaste}>
+      <TouchableOpacity 
+        style={[styles.button, compact && styles.buttonCompact]} 
+        onPress={() => {
+          clearDropModeIfActive();
+          handlePaste();
+        }}
+      >
         <Text style={[styles.buttonText, compact && styles.buttonTextCompact]}>
           {compact ? '📄' : 'Paste'}
         </Text>
@@ -123,7 +147,10 @@ const Toolbar: React.FC<ToolbarProps> = ({ canvasRef, compact = false }) => {
           selectedItems.size === 0 && styles.buttonDisabled,
           compact && styles.buttonCompact,
         ]}
-        onPress={handleDelete}
+        onPress={() => {
+          clearDropModeIfActive();
+          handleDelete();
+        }}
         disabled={selectedItems.size === 0}
       >
         <Text style={[styles.buttonText, styles.buttonTextDanger, compact && styles.buttonTextCompact]}>
@@ -131,13 +158,25 @@ const Toolbar: React.FC<ToolbarProps> = ({ canvasRef, compact = false }) => {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.button, styles.buttonDanger, compact && styles.buttonCompact]} onPress={clearAll}>
+      <TouchableOpacity 
+        style={[styles.button, styles.buttonDanger, compact && styles.buttonCompact]} 
+        onPress={() => {
+          clearDropModeIfActive();
+          clearAll();
+        }}
+      >
         <Text style={[styles.buttonText, styles.buttonTextDanger, compact && styles.buttonTextCompact]}>
           {compact ? '✕' : 'Clear All'}
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.button, styles.buttonPrimary, compact && styles.buttonCompact]} onPress={handleScreenshot}>
+      <TouchableOpacity 
+        style={[styles.button, styles.buttonPrimary, compact && styles.buttonCompact]} 
+        onPress={() => {
+          clearDropModeIfActive();
+          handleScreenshot();
+        }}
+      >
         <Text style={[styles.buttonText, styles.buttonTextPrimary, compact && styles.buttonTextCompact]}>
           {compact ? '📸' : 'Screenshot'}
         </Text>

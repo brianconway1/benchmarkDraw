@@ -15,6 +15,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({ onBackgroundSelected }) => {
   const isPhone = !isTablet;
   const background = useAppStore((state) => state.background);
   const setBackground = useAppStore((state) => state.setBackground);
+  const clearDropMode = useAppStore((state) => state.clearDropMode);
 
   const backgrounds: { type: BackgroundType; label: string }[] = [
     { type: 'pitch_full', label: 'Full Field' },
@@ -57,6 +58,11 @@ const LeftPanel: React.FC<LeftPanelProps> = ({ onBackgroundSelected }) => {
               isPhone && styles.pillPhone,
             ]}
             onPress={() => {
+              // Clear drop mode when background is selected
+              const store = useAppStore.getState();
+              if (store.dropMode) {
+                clearDropMode();
+              }
               setBackground(bg.type);
               // Close bottom sheet on mobile after selecting background
               if (isPhone && onBackgroundSelected) {

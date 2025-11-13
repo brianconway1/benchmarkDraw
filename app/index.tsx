@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, useWindowDimensions, StatusBar, ScrollView, Platform } from 'react-native';
+import { View, StyleSheet, SafeAreaView, useWindowDimensions, StatusBar, ScrollView, Platform, TouchableWithoutFeedback } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
+import { useAppStore } from '../store/appStore';
 import DrawingCanvas from '../components/Canvas/DrawingCanvas';
 import LeftPanel from '../components/Panels/LeftPanel';
 import RightPanel from '../components/Panels/RightPanel';
@@ -108,26 +109,45 @@ export default function HomeScreen() {
     return width; // Full width on mobile
   };
 
+  // Clear drop mode when tapping outside canvas (on panels/toolbars)
+  const clearDropMode = useAppStore((state) => state.clearDropMode);
+  
+  // Clear drop mode when any area outside canvas is tapped
+  const handleOutsideCanvasTap = () => {
+    const store = useAppStore.getState();
+    if (store.dropMode) {
+      clearDropMode();
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ExpoStatusBar style="light" />
       <StatusBar barStyle="light-content" />
       
       {/* Header with Logo */}
-      <View style={styles.header}>
-        {/* Logo would go here */}
-      </View>
+      <TouchableWithoutFeedback onPress={handleOutsideCanvasTap}>
+        <View style={styles.header}>
+          {/* Logo would go here */}
+        </View>
+      </TouchableWithoutFeedback>
 
       {/* Toolbar */}
-      <Toolbar canvasRef={canvasRef} />
+      <TouchableWithoutFeedback onPress={handleOutsideCanvasTap}>
+        <View>
+          <Toolbar canvasRef={canvasRef} />
+        </View>
+      </TouchableWithoutFeedback>
 
       {/* Main Content */}
       <View style={styles.content}>
         {/* Left Panel - Background Selection (Tablet only) */}
         {isTablet && (
-          <View style={styles.leftPanel}>
-            <LeftPanel />
-          </View>
+          <TouchableWithoutFeedback onPress={handleOutsideCanvasTap}>
+            <View style={styles.leftPanel}>
+              <LeftPanel />
+            </View>
+          </TouchableWithoutFeedback>
         )}
 
         {/* Canvas */}
@@ -140,25 +160,33 @@ export default function HomeScreen() {
 
         {/* Right Panel - Icons (Tablet only) */}
         {isTablet && (
-          <View style={styles.rightPanel}>
-            <RightPanel />
-          </View>
+          <TouchableWithoutFeedback onPress={handleOutsideCanvasTap}>
+            <View style={styles.rightPanel}>
+              <RightPanel />
+            </View>
+          </TouchableWithoutFeedback>
         )}
       </View>
 
       {/* Bottom Panel - Drawing Tools (Tablet only) */}
       {isTablet && (
-        <View style={styles.bottomPanel}>
-          <BottomPanel />
-        </View>
+        <TouchableWithoutFeedback onPress={handleOutsideCanvasTap}>
+          <View style={styles.bottomPanel}>
+            <BottomPanel />
+          </View>
+        </TouchableWithoutFeedback>
       )}
 
       {/* Mobile Tab Navigation - Always visible on mobile, but no tab should be active by default */}
       {isPhone && (
-        <MobileTabNavigation 
-          activeTab={bottomSheetVisible && activeMobileTab ? activeMobileTab : null} 
-          onTabChange={handleTabChange} 
-        />
+        <TouchableWithoutFeedback onPress={handleOutsideCanvasTap}>
+          <View>
+            <MobileTabNavigation 
+              activeTab={bottomSheetVisible && activeMobileTab ? activeMobileTab : null} 
+              onTabChange={handleTabChange} 
+            />
+          </View>
+        </TouchableWithoutFeedback>
       )}
       
       {/* Bottom Sheet Modal for Mobile Panels - Only visible when a tab is selected */}

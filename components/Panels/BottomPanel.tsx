@@ -11,6 +11,15 @@ const BottomPanel: React.FC = () => {
   const isPhone = minDimension < 768;
 
   const { lineConfig, setLineConfig, boxConfig, setBoxConfig } = useAppStore();
+  const clearDropMode = useAppStore((state) => state.clearDropMode);
+
+  // Clear drop mode when any drawing mode/setting is changed
+  const clearDropModeIfActive = () => {
+    const store = useAppStore.getState();
+    if (store.dropMode) {
+      clearDropMode();
+    }
+  };
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showLineSettings, setShowLineSettings] = useState(false);
 
@@ -37,22 +46,27 @@ const BottomPanel: React.FC = () => {
   ];
 
   const handleModeChange = (mode: DrawingMode) => {
+    clearDropModeIfActive();
     setLineConfig({ mode });
   };
 
   const handleThicknessChange = (thickness: number) => {
+    clearDropModeIfActive();
     setLineConfig({ thickness });
   };
 
   const handleDashChange = (dash: number[]) => {
+    clearDropModeIfActive();
     setLineConfig({ dash });
   };
 
   const handleArrowChange = (arrowStart: boolean, arrowEnd: boolean) => {
+    clearDropModeIfActive();
     setLineConfig({ arrowStart, arrowEnd });
   };
 
   const handleColorChange = (color: string) => {
+    clearDropModeIfActive();
     if (lineConfig.mode === 'rectangle') {
       setBoxConfig({ strokeColor: color });
     } else {
@@ -61,6 +75,7 @@ const BottomPanel: React.FC = () => {
   };
 
   const handleFillChange = (filled: boolean) => {
+    clearDropModeIfActive();
     if (lineConfig.mode === 'rectangle') {
       setBoxConfig({ filled });
     }

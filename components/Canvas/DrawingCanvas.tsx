@@ -133,19 +133,21 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
       const { locationX, locationY } = event.nativeEvent;
       const canvasPoint = convertScreenToCanvas({ x: locationX, y: locationY });
 
+      // Check if tap is outside canvas bounds - if so, clear drop mode
+      if (locationX < 0 || locationY < 0 || locationX > width || locationY > height) {
+        const store = useAppStore.getState();
+        if (store.dropMode) {
+          console.log('Tap outside canvas, clearing drop mode');
+          clearDropMode();
+        }
+        return;
+      }
+
       // Handle drop mode first (multi-drop icons)
       // Get latest drop mode from store to ensure we have current values
       const store = useAppStore.getState();
       const currentDropMode = store.dropMode;
       const currentDropModeConfig = store.dropModeConfig;
-      
-      console.log('=== TOUCH EVENT ===');
-      console.log('Location:', { locationX, locationY });
-      console.log('Canvas point:', canvasPoint);
-      console.log('Store dropMode:', currentDropMode);
-      console.log('Store dropModeConfig:', currentDropModeConfig);
-      console.log('Component dropMode (closure):', dropMode);
-      console.log('Component dropModeConfig (closure):', dropModeConfig);
       
       if (currentDropMode && currentDropModeConfig) {
         console.log('✓ Drop mode IS active, adding item...');
@@ -451,16 +453,6 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
 
   return (
     <View style={[styles.container, { width, height }]} {...panResponder.current.panHandlers}>
-      {/* X button to exit drop mode */}
-      {dropMode && (
-        <TouchableOpacity
-          style={styles.exitDropModeButton}
-          onPress={clearDropMode}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.exitDropModeButtonText}>✕</Text>
-        </TouchableOpacity>
-      )}
       <Svg
         width={width}
         height={height}
@@ -514,31 +506,6 @@ const styles = StyleSheet.create({
   },
   svg: {
     flex: 1,
-  },
-  exitDropModeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 8,
-    pointerEvents: 'box-only', // Only button itself captures touches, not the area around it
-  },
-  exitDropModeButtonText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000000',
   },
 });
 
