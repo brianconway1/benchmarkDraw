@@ -166,7 +166,7 @@ export default function HomeScreen() {
         <MobileBottomSheet
           visible={bottomSheetVisible}
           onClose={handleCloseBottomSheet}
-          snapPoints={isLandscape ? [0.4, 0.6, 0.8] : [0.5, 0.75, 0.9]}
+          snapPoints={isLandscape ? [0.25, 0.35] : [0.3, 0.4]}
         >
           {bottomSheetVisible && activeMobileTab && renderMobilePanelContent()}
         </MobileBottomSheet>

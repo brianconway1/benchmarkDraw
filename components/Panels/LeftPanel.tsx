@@ -81,48 +81,67 @@ const LeftPanel: React.FC<LeftPanelProps> = ({ onBackgroundSelected }) => {
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: 'transparent',
+    padding: 0,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 24,
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  pillsContainer: {
+    flexDirection: 'column',
+  },
+  pillsContainerPhone: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  pill: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 8,
     borderWidth: 2,
     borderColor: '#000000',
+    borderRadius: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    minWidth: 100,
+    marginVertical: 6,
+  },
+  pillActive: {
+    backgroundColor: '#000000',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
-    elevation: 8,
+    elevation: 6,
+    transform: [{ scale: 1.05 }],
   },
-  button: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginVertical: 4,
-    minWidth: 100,
-    alignItems: 'center',
+  pillPhone: {
+    flex: 1,
+    minWidth: '45%',
+    maxWidth: '48%',
+    marginHorizontal: 6,
+    marginVertical: 6,
   },
-  buttonActive: {
-    backgroundColor: '#000000',
-  },
-  buttonPhone: {
-    marginHorizontal: 4,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    minWidth: 70,
-  },
-  buttonText: {
+  pillText: {
     color: '#000000',
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 15,
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  buttonTextActive: {
+  pillTextActive: {
     color: '#FFFFFF',
-  },
-  buttonTextPhone: {
-    fontSize: 12,
   },
 });
 

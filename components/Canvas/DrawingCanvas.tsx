@@ -46,15 +46,64 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   const { screenToCanvas } = usePanZoom();
   const { handleTap } = useSelection();
   
-  // Convert screen coordinates to canvas coordinates
+  // Convert screen coordinates to canvas coordinates (viewBox coordinates)
+  // SVG viewBox scales content to fit the viewport, so we need to account for that
   const convertScreenToCanvas = useCallback((screenPoint: Point): Point => {
-    // For now, simple conversion - can be enhanced with pan/zoom
-    // Canvas is 800x600, screen might be different
-    const scaleX = CANVAS_WIDTH / width;
-    const scaleY = CANVAS_HEIGHT / height;
+    // SVG viewBox is 0 0 800 600
+    // The SVG element is width x height
+    // SVG uses preserveAspectRatio="xMidYMid meet" which means:
+    // - Scale uniformly to fit the viewport
+    // - Center the content
+    
+    const viewBoxWidth = CANVAS_WIDTH; // 800
+    const viewBoxHeight = CANVAS_HEIGHT; // 600
+    
+    // Calculate the aspect ratios
+    const viewBoxAspect = viewBoxWidth / viewBoxHeight; // 800/600 = 1.333
+    const screenAspect = width / height;
+    
+    // Calculate the uniform scale (SVG scales to fit smaller dimension)
+    let scale: number;
+    let offsetX = 0;
+    let offsetY = 0;
+    
+    if (screenAspect > viewBoxAspect) {
+      // Screen is wider - fit to height, letterbox on sides
+      scale = height / viewBoxHeight;
+      const scaledWidth = viewBoxWidth * scale;
+      offsetX = (width - scaledWidth) / 2;
+    } else {
+      // Screen is taller - fit to width, letterbox on top/bottom
+      scale = width / viewBoxWidth;
+      const scaledHeight = viewBoxHeight * scale;
+      offsetY = (height - scaledHeight) / 2;
+    }
+    
+    // Convert screen coordinates to viewBox coordinates
+    // First subtract the offset, then divide by scale to get viewBox coords
+    const viewBoxX = (screenPoint.x - offsetX) / scale;
+    const viewBoxY = (screenPoint.y - offsetY) / scale;
+    
+    // Debug log for first few touches
+    console.log('Coordinate conversion:', {
+      screenPoint,
+      width,
+      height,
+      viewBoxWidth,
+      viewBoxHeight,
+      screenAspect,
+      viewBoxAspect,
+      scale,
+      offsetX,
+      offsetY,
+      viewBoxX,
+      viewBoxY,
+    });
+    
+    // Clamp to viewBox bounds
     return {
-      x: screenPoint.x * scaleX,
-      y: screenPoint.y * scaleY,
+      x: Math.max(0, Math.min(viewBoxWidth, viewBoxX)),
+      y: Math.max(0, Math.min(viewBoxHeight, viewBoxY)),
     };
   }, [width, height]);
 
@@ -86,12 +135,20 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
 
       // Handle drop mode first (multi-drop icons)
       // Get latest drop mode from store to ensure we have current values
-      const currentDropMode = useAppStore.getState().dropMode;
-      const currentDropModeConfig = useAppStore.getState().dropModeConfig;
+      const store = useAppStore.getState();
+      const currentDropMode = store.dropMode;
+      const currentDropModeConfig = store.dropModeConfig;
       
-      console.log('Touch event:', { locationX, locationY, canvasPoint, dropMode: currentDropMode, dropModeConfig: currentDropModeConfig });
+      console.log('=== TOUCH EVENT ===');
+      console.log('Location:', { locationX, locationY });
+      console.log('Canvas point:', canvasPoint);
+      console.log('Store dropMode:', currentDropMode);
+      console.log('Store dropModeConfig:', currentDropModeConfig);
+      console.log('Component dropMode (closure):', dropMode);
+      console.log('Component dropModeConfig (closure):', dropModeConfig);
       
       if (currentDropMode && currentDropModeConfig) {
+        console.log('✓ Drop mode IS active, adding item...');
         console.log('Adding item in drop mode:', currentDropMode, 'at', canvasPoint);
         switch (currentDropMode) {
           case 'player': {
@@ -107,7 +164,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
                 label: finalLabel,
               });
             }
-            addPlayer({
+            const playerData = {
               x: canvasPoint.x,
               y: canvasPoint.y,
               team: team || 'team1',
@@ -116,34 +173,48 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
               stripeColor: stripeColor || 'white',
               labelType: labelType || 'number',
               label: finalLabel,
-            });
+            };
+            console.log('Calling addPlayer with:', playerData);
+            addPlayer(playerData);
+            console.log('addPlayer called. Current players count:', useAppStore.getState().players.length);
             return;
           }
           case 'cone': {
             const { coneColor, coneSize } = currentDropModeConfig;
-            addCone({
+            const coneData = {
               x: canvasPoint.x,
               y: canvasPoint.y,
               color: coneColor || 'orange',
               size: coneSize || 'medium',
-            });
+            };
+            console.log('Calling addCone with:', coneData);
+            addCone(coneData);
+            console.log('addCone called. Current cones count:', useAppStore.getState().cones.length);
             return;
           }
           case 'goalpost': {
-            addGoalPost({
+            const goalPostData = {
               x: canvasPoint.x,
               y: canvasPoint.y,
-            });
+            };
+            console.log('Calling addGoalPost with:', goalPostData);
+            addGoalPost(goalPostData);
+            console.log('addGoalPost called. Current goal posts count:', useAppStore.getState().goalPosts.length);
             return;
           }
           case 'ball': {
-            addBall({
+            const ballData = {
               x: canvasPoint.x,
               y: canvasPoint.y,
-            });
+            };
+            console.log('Calling addBall with:', ballData);
+            addBall(ballData);
+            console.log('addBall called. Current balls count:', useAppStore.getState().balls.length);
             return;
           }
         }
+      } else {
+        console.log('✗ Drop mode NOT active. currentDropMode:', currentDropMode, 'currentDropModeConfig:', currentDropModeConfig);
       }
 
       if (lineConfig.mode !== 'cursor') {
@@ -244,6 +315,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
     setDraggingItem(null);
   }, [isDrawing, finishDrawing]);
 
+  // Recreate PanResponder when handlers change to ensure we have latest callbacks
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -253,7 +325,19 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
       onPanResponderRelease: handleTouchEnd,
       onPanResponderTerminate: handleTouchEnd,
     })
-  ).current;
+  );
+
+  // Update PanResponder handlers when they change
+  React.useEffect(() => {
+    panResponder.current = PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: handleTouchStart,
+      onPanResponderMove: handleTouchMove,
+      onPanResponderRelease: handleTouchEnd,
+      onPanResponderTerminate: handleTouchEnd,
+    });
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
 
   const renderLine = (line: LineType) => {
     const selected = isSelected(line.id);
@@ -366,7 +450,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   }, [players.length, cones.length, goalPosts.length, balls.length]);
 
   return (
-    <View style={[styles.container, { width, height }]} {...panResponder.panHandlers}>
+    <View style={[styles.container, { width, height }]} {...panResponder.current.panHandlers}>
       {/* X button to exit drop mode */}
       {dropMode && (
         <TouchableOpacity
@@ -381,6 +465,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
         width={width}
         height={height}
         viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
+        preserveAspectRatio="xMidYMid meet"
         style={styles.svg}
       >
         {background === 'white' ? (

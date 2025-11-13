@@ -69,7 +69,7 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded })
     const nextNumber = team === 'team1' ? nextPlayerNumberTeam1 : nextPlayerNumberTeam2;
 
     // Set drop mode instead of adding immediately
-    useAppStore.getState().setDropMode('player', {
+    const dropModeConfig = {
       team,
       color,
       style,
@@ -77,7 +77,13 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded })
       labelType,
       label: labelType === 'number' ? nextNumber.toString() : (labelType === 'text' ? customText : ''),
       nextNumber,
-    });
+    };
+    console.log('RightPanel: Setting drop mode for player with config:', dropModeConfig);
+    useAppStore.getState().setDropMode('player', dropModeConfig);
+    
+    // Verify it was set
+    const verifyStore = useAppStore.getState();
+    console.log('RightPanel: Verified store dropMode:', verifyStore.dropMode, 'config:', verifyStore.dropModeConfig);
     
     // Close bottom sheet on mobile after entering drop mode
     onItemAdded?.();
@@ -85,10 +91,11 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded })
 
   const handleAddCone = () => {
     // Set drop mode instead of adding immediately
-    useAppStore.getState().setDropMode('cone', {
-      coneColor,
-      coneSize,
-    });
+    const dropModeConfig = { coneColor, coneSize };
+    console.log('RightPanel: Setting drop mode for cone with config:', dropModeConfig);
+    useAppStore.getState().setDropMode('cone', dropModeConfig);
+    const verifyStore = useAppStore.getState();
+    console.log('RightPanel: Verified store dropMode:', verifyStore.dropMode);
     
     // Close bottom sheet on mobile after entering drop mode
     onItemAdded?.();
@@ -96,7 +103,10 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded })
 
   const handleAddGoalPost = () => {
     // Set drop mode instead of adding immediately
+    console.log('RightPanel: Setting drop mode for goalpost');
     useAppStore.getState().setDropMode('goalpost', {});
+    const verifyStore = useAppStore.getState();
+    console.log('RightPanel: Verified store dropMode:', verifyStore.dropMode);
     
     // Close bottom sheet on mobile after entering drop mode
     onItemAdded?.();
@@ -104,7 +114,10 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded })
 
   const handleAddBall = () => {
     // Set drop mode instead of adding immediately
+    console.log('RightPanel: Setting drop mode for ball');
     useAppStore.getState().setDropMode('ball', {});
+    const verifyStore = useAppStore.getState();
+    console.log('RightPanel: Verified store dropMode:', verifyStore.dropMode);
     
     // Close bottom sheet on mobile after entering drop mode
     onItemAdded?.();

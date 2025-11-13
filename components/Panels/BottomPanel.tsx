@@ -92,40 +92,45 @@ const BottomPanel: React.FC = () => {
       {isPhone && (
         <Text style={styles.modalTitle}>Drawing Tools</Text>
       )}
+      
+      {/* Line Mode Selection - Always visible on mobile */}
+      <View style={[
+        styles.section,
+        isPhone && styles.sectionPhone
+      ]}>
+        {!isPhone && <Text style={styles.sectionTitle}>Line Mode</Text>}
+        <View style={[
+          styles.buttonGroup,
+          isPhone && styles.pillsContainer
+        ]}>
+          {lineModes.map(({ mode, label }) => (
+            <TouchableOpacity
+              key={mode}
+              style={[
+                isPhone ? styles.pill : styles.modeButton,
+                lineConfig.mode === mode && (isPhone ? styles.pillActive : styles.modeButtonActive),
+              ]}
+              onPress={() => handleModeChange(mode)}
+            >
+              <Text
+                style={[
+                  isPhone ? styles.pillText : styles.modeButtonText,
+                  lineConfig.mode === mode && (isPhone ? styles.pillTextActive : styles.modeButtonTextActive),
+                ]}
+              >
+                {label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
       <ScrollView
         horizontal={!isPhone}
         showsHorizontalScrollIndicator={false}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Line Mode Selection */}
-        <View style={styles.section}>
-          {!isPhone && <Text style={styles.sectionTitle}>Line Mode</Text>}
-          <View style={[
-            styles.buttonGroup,
-            isPhone && styles.pillsContainer
-          ]}>
-            {lineModes.map(({ mode, label }) => (
-              <TouchableOpacity
-                key={mode}
-                style={[
-                  isPhone ? styles.pill : styles.modeButton,
-                  lineConfig.mode === mode && (isPhone ? styles.pillActive : styles.modeButtonActive),
-                ]}
-                onPress={() => handleModeChange(mode)}
-              >
-                <Text
-                  style={[
-                    isPhone ? styles.pillText : styles.modeButtonText,
-                    lineConfig.mode === mode && (isPhone ? styles.pillTextActive : styles.modeButtonTextActive),
-                  ]}
-                >
-                  {label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
 
         {/* Thickness Slider */}
         {lineConfig.mode !== 'cursor' && (
@@ -336,6 +341,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     marginVertical: 4,
   },
+  sectionPhone: {
+    marginHorizontal: 0,
+    marginVertical: 0,
+    marginBottom: 20,
+  },
   sectionTitle: {
     fontSize: 12,
     fontWeight: '700',
@@ -358,6 +368,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
+    width: '100%',
   },
   modeButton: {
     backgroundColor: '#FFFFFF',
@@ -384,25 +395,37 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 2,
     borderColor: '#000000',
-    borderRadius: 20,
-    paddingVertical: 12,
+    borderRadius: 24,
+    paddingVertical: 14,
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 6,
-    marginVertical: 8,
+    marginVertical: 6,
     flex: 1,
     minWidth: '45%',
     maxWidth: '48%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   pillActive: {
     backgroundColor: '#000000',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
+    transform: [{ scale: 1.05 }],
   },
   pillText: {
     color: '#000000',
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 15,
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   pillTextActive: {
     color: '#FFFFFF',
