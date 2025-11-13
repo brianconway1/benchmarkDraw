@@ -45,6 +45,7 @@
       "favicon": "./assets/icon.png"
     },
     "plugins": [
+      "expo-linking",
       [
         "expo-media-library",
         {
