@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useState } from 'react';
-import { View, StyleSheet, Dimensions, PanResponder, GestureResponderEvent } from 'react-native';
+import { View, StyleSheet, Dimensions, PanResponder, GestureResponderEvent, TouchableOpacity, Text } from 'react-native';
 import Svg, { Image as SvgImage, Line as SvgLine, Path, Rect, Polygon, Defs, Pattern } from 'react-native-svg';
 import { useAppStore } from '../../store/appStore';
 import { usePanZoom } from '../../hooks/usePanZoom';
@@ -35,6 +35,13 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   const boxConfig = useAppStore((state) => state.boxConfig);
   const addLine = useAppStore((state) => state.addLine);
   const isSelected = useAppStore((state) => state.isSelected);
+  const dropMode = useAppStore((state) => state.dropMode);
+  const dropModeConfig = useAppStore((state) => state.dropModeConfig);
+  const addPlayer = useAppStore((state) => state.addPlayer);
+  const addCone = useAppStore((state) => state.addCone);
+  const addGoalPost = useAppStore((state) => state.addGoalPost);
+  const addBall = useAppStore((state) => state.addBall);
+  const clearDropMode = useAppStore((state) => state.clearDropMode);
 
   const { screenToCanvas } = usePanZoom();
   const { handleTap } = useSelection();
@@ -76,6 +83,61 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
     (event: GestureResponderEvent) => {
       const { locationX, locationY } = event.nativeEvent;
       const canvasPoint = convertScreenToCanvas({ x: locationX, y: locationY });
+
+      // Handle drop mode first (multi-drop icons)
+      if (dropMode && dropModeConfig) {
+        switch (dropMode) {
+          case 'player': {
+            const { team, color, style, stripeColor, labelType, label, nextNumber } = dropModeConfig;
+            let finalLabel = label || '';
+            // Increment number if using number labels
+            if (labelType === 'number' && nextNumber !== undefined) {
+              finalLabel = nextNumber.toString();
+              // Update the drop mode config with next number for next drop
+              useAppStore.getState().setDropMode('player', {
+                ...dropModeConfig,
+                nextNumber: nextNumber + 1,
+                label: finalLabel,
+              });
+            }
+            addPlayer({
+              x: canvasPoint.x,
+              y: canvasPoint.y,
+              team: team || 'team1',
+              color: color || '#2563eb',
+              style: style || 'solid',
+              stripeColor: stripeColor || 'white',
+              labelType: labelType || 'number',
+              label: finalLabel,
+            });
+            return;
+          }
+          case 'cone': {
+            const { coneColor, coneSize } = dropModeConfig;
+            addCone({
+              x: canvasPoint.x,
+              y: canvasPoint.y,
+              color: coneColor || 'orange',
+              size: coneSize || 'medium',
+            });
+            return;
+          }
+          case 'goalpost': {
+            addGoalPost({
+              x: canvasPoint.x,
+              y: canvasPoint.y,
+            });
+            return;
+          }
+          case 'ball': {
+            addBall({
+              x: canvasPoint.x,
+              y: canvasPoint.y,
+            });
+            return;
+          }
+        }
+      }
 
       if (lineConfig.mode !== 'cursor') {
         startDrawing(canvasPoint);
@@ -131,7 +193,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
         }
       }
     },
-    [convertScreenToCanvas, lineConfig.mode, startDrawing, handleTap]
+    [convertScreenToCanvas, lineConfig.mode, startDrawing, handleTap, dropMode, dropModeConfig, addPlayer, addCone, addGoalPost, addBall]
   );
 
   const handleTouchMove = useCallback(
@@ -286,6 +348,16 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
 
   return (
     <View style={[styles.container, { width, height }]} {...panResponder.panHandlers}>
+      {/* X button to exit drop mode */}
+      {dropMode && (
+        <TouchableOpacity
+          style={styles.exitDropModeButton}
+          onPress={clearDropMode}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.exitDropModeButtonText}>✕</Text>
+        </TouchableOpacity>
+      )}
       <Svg
         width={width}
         height={height}
@@ -338,6 +410,30 @@ const styles = StyleSheet.create({
   },
   svg: {
     flex: 1,
+  },
+  exitDropModeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 8,
+  },
+  exitDropModeButtonText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#000000',
   },
 });
 

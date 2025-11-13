@@ -68,62 +68,45 @@ const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart, onItemAdded })
     const customText = team === 'team1' ? playerCustomTextTeam1 : playerCustomTextTeam2;
     const nextNumber = team === 'team1' ? nextPlayerNumberTeam1 : nextPlayerNumberTeam2;
 
-    let label = '';
-    if (labelType === 'number') {
-      label = nextNumber.toString();
-      if (team === 'team1') {
-        setNextPlayerNumberTeam1((prev) => prev + 1);
-      } else {
-        setNextPlayerNumberTeam2((prev) => prev + 1);
-      }
-    } else if (labelType === 'text') {
-      label = customText;
-    }
-
-    useAppStore.getState().addPlayer({
-      x: 400,
-      y: 300,
+    // Set drop mode instead of adding immediately
+    useAppStore.getState().setDropMode('player', {
       team,
       color,
       style,
       stripeColor,
       labelType,
-      label,
+      label: labelType === 'number' ? nextNumber.toString() : (labelType === 'text' ? customText : ''),
+      nextNumber,
     });
     
-    // Close bottom sheet on mobile after adding item
+    // Close bottom sheet on mobile after entering drop mode
     onItemAdded?.();
   };
 
   const handleAddCone = () => {
-    useAppStore.getState().addCone({
-      x: 400,
-      y: 300,
-      color: coneColor,
-      size: coneSize,
+    // Set drop mode instead of adding immediately
+    useAppStore.getState().setDropMode('cone', {
+      coneColor,
+      coneSize,
     });
     
-    // Close bottom sheet on mobile after adding item
+    // Close bottom sheet on mobile after entering drop mode
     onItemAdded?.();
   };
 
   const handleAddGoalPost = () => {
-    useAppStore.getState().addGoalPost({
-      x: 400,
-      y: 300,
-    });
+    // Set drop mode instead of adding immediately
+    useAppStore.getState().setDropMode('goalpost', {});
     
-    // Close bottom sheet on mobile after adding item
+    // Close bottom sheet on mobile after entering drop mode
     onItemAdded?.();
   };
 
   const handleAddBall = () => {
-    useAppStore.getState().addBall({
-      x: 400,
-      y: 300,
-    });
+    // Set drop mode instead of adding immediately
+    useAppStore.getState().setDropMode('ball', {});
     
-    // Close bottom sheet on mobile after adding item
+    // Close bottom sheet on mobile after entering drop mode
     onItemAdded?.();
   };
 

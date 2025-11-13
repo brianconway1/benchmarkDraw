@@ -13,6 +13,10 @@ import {
   BoxConfig,
   AnimationFrame,
   Animation,
+  PlayerStyle,
+  LabelType,
+  ConeColor,
+  ConeSize,
 } from '../types';
 
 interface AppStore extends CanvasState {
@@ -74,6 +78,22 @@ interface AppStore extends CanvasState {
   boxConfig: BoxConfig;
   setBoxConfig: (config: Partial<BoxConfig>) => void;
 
+  // Drop mode (multi-drop for icons)
+  dropMode: 'player' | 'cone' | 'goalpost' | 'ball' | null;
+  dropModeConfig: {
+    team?: PlayerTeam;
+    color?: string;
+    style?: PlayerStyle;
+    stripeColor?: string;
+    labelType?: LabelType;
+    label?: string;
+    nextNumber?: number;
+    coneColor?: ConeColor;
+    coneSize?: ConeSize;
+  } | null;
+  setDropMode: (mode: 'player' | 'cone' | 'goalpost' | 'ball' | null, config?: any) => void;
+  clearDropMode: () => void;
+
   // Animations
   animations: Animation[];
   currentAnimation: string | null;
@@ -122,6 +142,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
   animations: [],
   currentAnimation: null,
   copiedItems: null,
+  dropMode: null,
+  dropModeConfig: null,
 
   setBackground: (background) => {
     set({ background });
@@ -469,6 +491,20 @@ export const useAppStore = create<AppStore>((set, get) => ({
           : a
       ),
     }));
+  },
+
+  setDropMode: (mode, config) => {
+    set({
+      dropMode: mode,
+      dropModeConfig: config || null,
+    });
+  },
+
+  clearDropMode: () => {
+    set({
+      dropMode: null,
+      dropModeConfig: null,
+    });
   },
 }));
 
