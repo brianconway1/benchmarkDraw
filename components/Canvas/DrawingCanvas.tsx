@@ -87,18 +87,22 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
       console.log('Touch event:', { locationX, locationY, canvasPoint, dropMode, dropModeConfig });
 
       // Handle drop mode first (multi-drop icons)
-      if (dropMode && dropModeConfig) {
-        console.log('Adding item in drop mode:', dropMode, 'at', canvasPoint);
-        switch (dropMode) {
+      // Get latest drop mode from store to ensure we have current values
+      const currentDropMode = useAppStore.getState().dropMode;
+      const currentDropModeConfig = useAppStore.getState().dropModeConfig;
+      
+      if (currentDropMode && currentDropModeConfig) {
+        console.log('Adding item in drop mode:', currentDropMode, 'at', canvasPoint);
+        switch (currentDropMode) {
           case 'player': {
-            const { team, color, style, stripeColor, labelType, label, nextNumber } = dropModeConfig;
+            const { team, color, style, stripeColor, labelType, label, nextNumber } = currentDropModeConfig;
             let finalLabel = label || '';
             // Increment number if using number labels
             if (labelType === 'number' && nextNumber !== undefined) {
               finalLabel = nextNumber.toString();
               // Update the drop mode config with next number for next drop
               useAppStore.getState().setDropMode('player', {
-                ...dropModeConfig,
+                ...currentDropModeConfig,
                 nextNumber: nextNumber + 1,
                 label: finalLabel,
               });
@@ -116,7 +120,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
             return;
           }
           case 'cone': {
-            const { coneColor, coneSize } = dropModeConfig;
+            const { coneColor, coneSize } = currentDropModeConfig;
             addCone({
               x: canvasPoint.x,
               y: canvasPoint.y,
@@ -196,7 +200,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
         }
       }
     },
-    [convertScreenToCanvas, lineConfig.mode, startDrawing, handleTap, dropMode, dropModeConfig, addPlayer, addCone, addGoalPost, addBall]
+    [convertScreenToCanvas, lineConfig.mode, startDrawing, handleTap, addPlayer, addCone, addGoalPost, addBall]
   );
 
   const handleTouchMove = useCallback(
@@ -444,6 +448,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 8,
+    pointerEvents: 'box-only', // Only button itself captures touches, not the area around it
   },
   exitDropModeButtonText: {
     fontSize: 24,
