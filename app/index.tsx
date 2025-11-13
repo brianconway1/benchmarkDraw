@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, useWindowDimensions, StatusBar, ScrollView } from 'react-native';
+import { View, StyleSheet, SafeAreaView, useWindowDimensions, StatusBar, ScrollView, Platform } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import DrawingCanvas from '../components/Canvas/DrawingCanvas';
 import LeftPanel from '../components/Panels/LeftPanel';
@@ -13,7 +13,14 @@ import MobileBottomSheet from '../components/Mobile/MobileBottomSheet';
 
 export default function HomeScreen() {
   const { width, height } = useWindowDimensions();
-  const isTablet = width >= 768;
+  const isLandscape = width > height;
+  
+  // Better tablet detection: Check both width and height to avoid landscape phone being detected as tablet
+  // iPad is 768px or more in portrait, but in landscape we need to check the smaller dimension
+  const minDimension = Math.min(width, height);
+  const isTablet = minDimension >= 768 || (Platform.OS === 'ios' && minDimension >= 600); // iPad mini is 768, but some might be 600+
+  
+  const isPhone = !isTablet;
   const canvasRef = useRef<any>(null);
   const [activeMobileTab, setActiveMobileTab] = useState<TabType | null>(null);
   const [bottomSheetVisible, setBottomSheetVisible] = useState(false);
@@ -83,13 +90,28 @@ export default function HomeScreen() {
     }
   };
 
-  // Calculate canvas height accounting for mobile tabs
+  // Calculate canvas height accounting for orientation and device type
   const getCanvasHeight = () => {
     if (isTablet) {
-      return height - 200; // Header + Toolbar + BottomPanel
+      // Tablet: account for header, toolbar, and bottom panel
+      const headerHeight = 60;
+      const toolbarHeight = isLandscape ? 40 : 50;
+      const bottomPanelHeight = isLandscape ? 60 : 80;
+      return height - headerHeight - toolbarHeight - bottomPanelHeight;
     }
     // Mobile: Header + Toolbar + Tab Navigation
-    return height - 60 - (width < 375 ? 40 : 50) - 50;
+    const headerHeight = 60;
+    const toolbarHeight = isLandscape ? 35 : 45;
+    const tabNavHeight = isLandscape ? 40 : 50;
+    return height - headerHeight - toolbarHeight - tabNavHeight;
+  };
+
+  // Adjust canvas width for landscape
+  const getCanvasWidth = () => {
+    if (isTablet) {
+      return width - 240; // Side panels (120px each)
+    }
+    return width; // Full width on mobile
   };
 
   return (
@@ -117,7 +139,7 @@ export default function HomeScreen() {
         {/* Canvas */}
         <View style={styles.canvasContainer}>
           <DrawingCanvas 
-            width={width - (isTablet ? 240 : 0)} 
+            width={getCanvasWidth()} 
             height={getCanvasHeight()} 
           />
         </View>
@@ -138,15 +160,16 @@ export default function HomeScreen() {
       )}
 
       {/* Mobile Tab Navigation */}
-      {!isTablet && (
+      {isPhone && (
         <>
           <MobileTabNavigation activeTab={activeMobileTab || 'background'} onTabChange={handleTabChange} />
           
           {/* Bottom Sheet Modal for Mobile Panels */}
+          {/* Adjust snap points for landscape - make them smaller since we have less vertical space */}
           <MobileBottomSheet
             visible={bottomSheetVisible}
             onClose={handleCloseBottomSheet}
-            snapPoints={[0.5, 0.75, 0.9]}
+            snapPoints={isLandscape ? [0.4, 0.6, 0.8] : [0.5, 0.75, 0.9]}
           >
             {renderMobilePanelContent()}
           </MobileBottomSheet>

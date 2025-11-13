@@ -10,9 +10,11 @@ interface ToolbarProps {
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({ canvasRef, compact = false }) => {
-  const { width } = useWindowDimensions();
-  const isPhone = width < 768;
-  const isSmallPhone = width < 375;
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const minDimension = Math.min(width, height);
+  const isPhone = minDimension < 768;
+  const isSmallPhone = minDimension < 375;
   const { undo, redo, canUndo, canRedo } = useHistory();
   const deleteSelected = useAppStore((state) => state.deleteSelected);
   const clearAll = useAppStore((state) => state.clearAll);
@@ -55,8 +57,8 @@ const Toolbar: React.FC<ToolbarProps> = ({ canvasRef, compact = false }) => {
               flexDirection: 'row',
               flexWrap: 'wrap',
               justifyContent: 'center',
-              paddingVertical: isSmallPhone || compact ? 4 : 8,
-              paddingHorizontal: isSmallPhone || compact ? 2 : 4,
+              paddingVertical: (isSmallPhone || compact || isLandscape) ? 4 : 8,
+              paddingHorizontal: (isSmallPhone || compact || isLandscape) ? 2 : 4,
             }
           : {
               flexDirection: 'row',

@@ -5,8 +5,10 @@ import { BackgroundType } from '../../types';
 
 const LeftPanel: React.FC = () => {
   const { width, height } = useWindowDimensions();
-  const isTablet = width >= 768;
-  const isPhone = width < 768;
+  const isLandscape = width > height;
+  const minDimension = Math.min(width, height);
+  const isTablet = minDimension >= 768;
+  const isPhone = !isTablet;
   const background = useAppStore((state) => state.background);
   const setBackground = useAppStore((state) => state.setBackground);
 

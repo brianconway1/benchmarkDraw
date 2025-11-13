@@ -9,8 +9,9 @@ interface MobileTabNavigationProps {
 }
 
 const MobileTabNavigation: React.FC<MobileTabNavigationProps> = ({ activeTab, onTabChange }) => {
-  const { width } = useWindowDimensions();
-  const isSmallPhone = width < 375;
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const isSmallPhone = Math.min(width, height) < 375;
 
   const tabs: { id: TabType; label: string; icon: string }[] = [
     { id: 'background', label: 'Background', icon: '🎨' },
@@ -20,19 +21,20 @@ const MobileTabNavigation: React.FC<MobileTabNavigationProps> = ({ activeTab, on
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isLandscape && styles.containerLandscape]}>
       {tabs.map((tab) => (
         <TouchableOpacity
           key={tab.id}
           style={[
             styles.tab,
             activeTab === tab.id && styles.tabActive,
-            isSmallPhone && styles.tabSmall,
+            (isSmallPhone || isLandscape) && styles.tabSmall,
+            isLandscape && styles.tabLandscape,
           ]}
           onPress={() => onTabChange(tab.id)}
         >
-          <Text style={styles.tabIcon}>{tab.icon}</Text>
-          {!isSmallPhone && (
+          <Text style={[styles.tabIcon, isLandscape && styles.tabIconLandscape]}>{tab.icon}</Text>
+          {!isSmallPhone && !isLandscape && (
             <Text
               style={[
                 styles.tabLabel,
@@ -62,6 +64,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 8,
   },
+  containerLandscape: {
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+  },
   tab: {
     flex: 1,
     alignItems: 'center',
@@ -78,9 +84,18 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 2,
   },
+  tabLandscape: {
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+    marginHorizontal: 1,
+  },
   tabIcon: {
     fontSize: 20,
     marginBottom: 4,
+  },
+  tabIconLandscape: {
+    fontSize: 18,
+    marginBottom: 0,
   },
   tabLabel: {
     fontSize: 10,

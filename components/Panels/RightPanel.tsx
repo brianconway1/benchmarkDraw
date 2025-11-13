@@ -11,8 +11,10 @@ interface RightPanelProps {
 }
 
 const RightPanel: React.FC<RightPanelProps> = ({ onIconDragStart }) => {
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 768;
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const minDimension = Math.min(width, height);
+  const isTablet = minDimension >= 768;
 
   // Player settings
   const [playerColorTeam1, setPlayerColorTeam1] = useState('#2563eb');

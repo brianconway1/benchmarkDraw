@@ -5,8 +5,10 @@ import { DrawingMode } from '../../types';
 import Svg, { Line, Path, Rect } from 'react-native-svg';
 
 const BottomPanel: React.FC = () => {
-  const { width } = useWindowDimensions();
-  const isPhone = width < 768;
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const minDimension = Math.min(width, height);
+  const isPhone = minDimension < 768;
 
   const { lineConfig, setLineConfig, boxConfig, setBoxConfig } = useAppStore();
   const [showColorPicker, setShowColorPicker] = useState(false);
