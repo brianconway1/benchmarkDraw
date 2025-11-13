@@ -89,15 +89,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
       const currentDropMode = useAppStore.getState().dropMode;
       const currentDropModeConfig = useAppStore.getState().dropModeConfig;
       
-      console.log('Touch event:', { 
-        locationX, 
-        locationY, 
-        canvasPoint, 
-        closureDropMode: dropMode, 
-        closureDropModeConfig: dropModeConfig,
-        currentDropMode,
-        currentDropModeConfig 
-      });
+      console.log('Touch event:', { locationX, locationY, canvasPoint, dropMode: currentDropMode, dropModeConfig: currentDropModeConfig });
       
       if (currentDropMode && currentDropModeConfig) {
         console.log('Adding item in drop mode:', currentDropMode, 'at', canvasPoint);

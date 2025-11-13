@@ -79,8 +79,8 @@ const BottomPanel: React.FC = () => {
         isPhone
           ? {
               flexDirection: 'column',
-              paddingVertical: 8,
-              paddingHorizontal: 4,
+              paddingVertical: 20,
+              paddingHorizontal: 16,
             }
           : {
               flexDirection: 'row',
@@ -89,29 +89,35 @@ const BottomPanel: React.FC = () => {
             },
       ]}
     >
+      {isPhone && (
+        <Text style={styles.modalTitle}>Drawing Tools</Text>
+      )}
       <ScrollView
-        horizontal={isPhone}
+        horizontal={!isPhone}
         showsHorizontalScrollIndicator={false}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
         {/* Line Mode Selection */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Line Mode</Text>
-          <View style={styles.buttonGroup}>
+          {!isPhone && <Text style={styles.sectionTitle}>Line Mode</Text>}
+          <View style={[
+            styles.buttonGroup,
+            isPhone && styles.pillsContainer
+          ]}>
             {lineModes.map(({ mode, label }) => (
               <TouchableOpacity
                 key={mode}
                 style={[
-                  styles.modeButton,
-                  lineConfig.mode === mode && styles.modeButtonActive,
+                  isPhone ? styles.pill : styles.modeButton,
+                  lineConfig.mode === mode && (isPhone ? styles.pillActive : styles.modeButtonActive),
                 ]}
                 onPress={() => handleModeChange(mode)}
               >
                 <Text
                   style={[
-                    styles.modeButtonText,
-                    lineConfig.mode === mode && styles.modeButtonTextActive,
+                    isPhone ? styles.pillText : styles.modeButtonText,
+                    lineConfig.mode === mode && (isPhone ? styles.pillTextActive : styles.modeButtonTextActive),
                   ]}
                 >
                   {label}
@@ -337,9 +343,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textTransform: 'uppercase',
   },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
   buttonGroup: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+  },
+  pillsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
   },
   modeButton: {
     backgroundColor: '#FFFFFF',
@@ -360,6 +378,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   modeButtonTextActive: {
+    color: '#FFFFFF',
+  },
+  pill: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#000000',
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 6,
+    marginVertical: 8,
+    flex: 1,
+    minWidth: '45%',
+    maxWidth: '48%',
+  },
+  pillActive: {
+    backgroundColor: '#000000',
+  },
+  pillText: {
+    color: '#000000',
+    fontWeight: '700',
+    fontSize: 14,
+    textTransform: 'uppercase',
+  },
+  pillTextActive: {
     color: '#FFFFFF',
   },
   thicknessButton: {

@@ -29,10 +29,8 @@ const LeftPanel: React.FC<LeftPanelProps> = ({ onBackgroundSelected }) => {
         styles.container,
         isPhone
           ? {
-              flexDirection: 'row',
-              justifyContent: 'center',
-              paddingVertical: 8,
-              paddingHorizontal: 4,
+              paddingVertical: 20,
+              paddingHorizontal: 16,
             }
           : {
               position: 'absolute',
@@ -43,33 +41,40 @@ const LeftPanel: React.FC<LeftPanelProps> = ({ onBackgroundSelected }) => {
             },
       ]}
     >
-      {backgrounds.map((bg) => (
-        <TouchableOpacity
-          key={bg.type}
-          style={[
-            styles.button,
-            background === bg.type && styles.buttonActive,
-            isPhone && styles.buttonPhone,
-          ]}
-          onPress={() => {
-            setBackground(bg.type);
-            // Close bottom sheet on mobile after selecting background
-            if (isPhone && onBackgroundSelected) {
-              onBackgroundSelected();
-            }
-          }}
-        >
-          <Text
+      {isPhone && (
+        <Text style={styles.modalTitle}>Select Background</Text>
+      )}
+      <View style={[
+        styles.pillsContainer,
+        isPhone && styles.pillsContainerPhone
+      ]}>
+        {backgrounds.map((bg) => (
+          <TouchableOpacity
+            key={bg.type}
             style={[
-              styles.buttonText,
-              background === bg.type && styles.buttonTextActive,
-              isPhone && styles.buttonTextPhone,
+              styles.pill,
+              background === bg.type && styles.pillActive,
+              isPhone && styles.pillPhone,
             ]}
+            onPress={() => {
+              setBackground(bg.type);
+              // Close bottom sheet on mobile after selecting background
+              if (isPhone && onBackgroundSelected) {
+                onBackgroundSelected();
+              }
+            }}
           >
-            {bg.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
+            <Text
+              style={[
+                styles.pillText,
+                background === bg.type && styles.pillTextActive,
+              ]}
+            >
+              {bg.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 };
