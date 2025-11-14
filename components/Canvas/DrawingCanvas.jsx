@@ -132,10 +132,23 @@ const DrawingCanvas = ({
         return { x: viewBoxWidth / 2, y: viewBoxHeight / 2 };
       }
       
-      // Convert screen coordinates to viewBox coordinates
-      // First subtract the SVG offset, then divide by SVG scale, then account for pan/zoom
-      const viewBoxX = ((screenPoint.x - offsetX) / svgScale - currentTranslateX) / currentScale;
-      const viewBoxY = ((screenPoint.y - offsetY) / svgScale - currentTranslateY) / currentScale;
+      // Recreate the forward transform applied in animatedTransform and invert it:
+      // 1. animatedTransform shifts the SVG to the view center, scales, then translates by (translateX, translateY) in viewBox units.
+      // 2. The SVG itself letterboxes via preserveAspectRatio, introducing offsetX/offsetY in screen space and scaling by svgScale.
+      //
+      // Forward path (viewBox -> screen):
+      // screen = -width/2 + translateX*svgScale + currentScale * (offsetX + viewBox*svgScale + width/2)
+      // Solve for viewBox.
+      const translateXInPixels = currentTranslateX * svgScale;
+      const translateYInPixels = currentTranslateY * svgScale;
+
+      const baseScreenX =
+        (screenPoint.x + width / 2 - translateXInPixels) / currentScale - offsetX - width / 2;
+      const baseScreenY =
+        (screenPoint.y + height / 2 - translateYInPixels) / currentScale - offsetY - height / 2;
+
+      const viewBoxX = baseScreenX / svgScale;
+      const viewBoxY = baseScreenY / svgScale;
       
       // Validate result
       if (!isFinite(viewBoxX) || !isFinite(viewBoxY)) {
